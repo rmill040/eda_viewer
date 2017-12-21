@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 
+import os
 from PySide.QtUiTools import QUiLoader
 from PySide.QtCore import QFile, QMetaObject
 
@@ -7,7 +8,7 @@ from PySide.QtCore import QFile, QMetaObject
 """CONSTANTS"""
 ###############
 
-UI_PATH        = '/Users/R2/Documents/EDAViewer/gui.ui'
+UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
 USE_DARK_THEME = True
 
 
