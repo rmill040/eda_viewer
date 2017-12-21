@@ -4,13 +4,17 @@ import os
 from PySide.QtUiTools import QUiLoader
 from PySide.QtCore import QFile, QMetaObject
 
+
 ###############
 """CONSTANTS"""
 ###############
 
 UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
 USE_DARK_THEME = True
-
+DTYPES_MAPPING = {'int64': 'integer', 
+                  'float64': 'float',
+                  'object': 'object',
+                  'datetime64[ns]': 'datetime'}
 
 ######################
 """HELPER FUNCTIONS"""
@@ -38,6 +42,7 @@ class UiLoader(QUiLoader):
             widget = QUiLoader.createWidget(self, class_name, parent, name)
             if self.base_instance: setattr(self.base_instance, name, widget)
             return widget
+
 
 def load_ui(ui_file, base_instance=None):
     """ADD
