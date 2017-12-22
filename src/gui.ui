@@ -206,6 +206,10 @@
          <property name="text">
           <string>Generate</string>
          </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../icons/check.png</normaloff>../icons/check.png</iconset>
+         </property>
         </widget>
        </item>
       </layout>
@@ -248,11 +252,20 @@
            <bold>false</bold>
           </font>
          </property>
+         <property name="mouseTracking">
+          <bool>false</bool>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
          <property name="tabPosition">
           <enum>QTabWidget::North</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
+         </property>
+         <property name="usesScrollButtons">
+          <bool>false</bool>
          </property>
          <widget class="QWidget" name="tab1_Data">
           <attribute name="title">
@@ -501,7 +514,7 @@
               <bool>false</bool>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
@@ -599,6 +612,164 @@
            <string>Bivariate</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_5">
+           <item row="1" column="0">
+            <widget class="QLabel" name="tab3_label_ModelType">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Model Type</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QLabel" name="tab3_label_LinkToModelAPI">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <underline>true</underline>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(0, 0, 255)</string>
+             </property>
+             <property name="text">
+              <string>Link to Model API</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="4">
+            <spacer name="tab3_verticalSpacer">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="tab3_checkBox_AddPredictions">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Add Predictions to Plot</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="4">
+            <widget class="QGroupBox" name="tab3_groupBox_ModelParameters">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="title">
+              <string>Model Parameters: Key/Value Format</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="0">
+               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelParameters">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::WinPanel</enum>
+                </property>
+                <property name="plainText">
+                 <string/>
+                </property>
+                <property name="placeholderText">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="4">
+            <widget class="QGroupBox" name="tab3_groupBox_ModelSummary">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="title">
+              <string>Model Summary</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelSummary">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::WinPanel</enum>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+                <property name="plainText">
+                 <string>Model Summary Will Display Here...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
            <item row="0" column="0">
             <widget class="QCheckBox" name="tab3_checkBox_FitModel">
              <property name="font">
@@ -665,164 +836,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="tab3_label_ModelType">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Model Type</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QLabel" name="tab3_label_LinkToModelAPI">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-               <underline>true</underline>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: rgb(0, 0, 255)</string>
-             </property>
-             <property name="text">
-              <string>Link to Model API</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="openExternalLinks">
-              <bool>true</bool>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="4">
-            <spacer name="tab3_verticalSpacer">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="5" column="0" colspan="4">
-            <widget class="QGroupBox" name="tab3_groupBox_ModelSummary">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="title">
-              <string>Model Summary</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelSummary">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::WinPanel</enum>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-                <property name="plainText">
-                 <string>Model Summary Will Display Here...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="4">
-            <widget class="QGroupBox" name="tab3_groupBox_ModelParameters">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="title">
-              <string>Model Parameters: Key/Value Format</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_6">
-              <item row="0" column="0">
-               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelParameters">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::WinPanel</enum>
-                </property>
-                <property name="plainText">
-                 <string/>
-                </property>
-                <property name="placeholderText">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QCheckBox" name="tab3_checkBox_AddPredictions">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Add Predictions to Plot</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </widget>
@@ -854,7 +867,30 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="menuItem_ExportData"/>
+    <widget class="QMenu" name="menuItem_Save">
+     <property name="geometry">
+      <rect>
+       <x>239</x>
+       <y>134</y>
+       <width>152</width>
+       <height>138</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Save...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>../icons/content-save.png</normaloff>../icons/content-save.png</iconset>
+     </property>
+     <addaction name="menuItem_Data"/>
+     <addaction name="menuItem_Plot"/>
+     <addaction name="menuItem_Statistics"/>
+     <addaction name="separator"/>
+     <addaction name="menuItem_All"/>
+    </widget>
+    <addaction name="menuItem_ResetData"/>
+    <addaction name="menuItem_Save"/>
     <addaction name="separator"/>
     <addaction name="menuItem_Exit"/>
    </widget>
@@ -869,13 +905,17 @@
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_Data">
    <property name="text">
     <string>Load Data</string>
    </property>
   </action>
   <action name="menuItem_Documentation">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/application.png</normaloff>../icons/application.png</iconset>
+   </property>
    <property name="text">
     <string>Documentation</string>
    </property>
@@ -891,6 +931,10 @@
    </property>
   </action>
   <action name="menuItem_About">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/information-outline.png</normaloff>../icons/information-outline.png</iconset>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -911,6 +955,70 @@
    </property>
   </action>
   <action name="menuItem_Exit">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/window-close.png</normaloff>../icons/window-close.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Reload Data</string>
+   </property>
+  </action>
+  <action name="actionData_2">
+   <property name="text">
+    <string>Data</string>
+   </property>
+  </action>
+  <action name="menuItem_Data">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/chart-timeline.png</normaloff>../icons/chart-timeline.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data</string>
+   </property>
+  </action>
+  <action name="menuItem_Plot">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/chart-line.png</normaloff>../icons/chart-line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Plot</string>
+   </property>
+  </action>
+  <action name="menuItem_Statistics">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/chart-timeline.png</normaloff>../icons/chart-timeline.png</iconset>
+   </property>
+   <property name="text">
+    <string>Statistics</string>
+   </property>
+  </action>
+  <action name="menuItem_All">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/content-save-all.png</normaloff>../icons/content-save-all.png</iconset>
+   </property>
+   <property name="text">
+    <string>All</string>
+   </property>
+  </action>
+  <action name="menuItem_ResetData">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/refresh.png</normaloff>../icons/refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Data</string>
+   </property>
+  </action>
+  <action name="menuItem_Exit_2">
    <property name="text">
     <string>Exit</string>
    </property>
