@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import division, print_function
+
+# Set matplotlib backend to PySide
+import matplotlib
+matplotlib.use('Qt4Agg')
+matplotlib.rcParams['backend.qt4'] = 'PySide'
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 
 import os
 import pandas as pd
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
-                          QMainWindow, QTableWidgetItem, QWidget)
+                          QMainWindow, QTableWidgetItem, QVBoxLayout, QWidget)
 import qdarkstyle
 import sys
 
 # Custom functions
 from about import AboutUi
+from visual import DynamicMplCanvas
 import utils
 
 # TODO:
-# - Fix coloring of icon on AboutUi
 # - Add tooltips
 # - Add error checking
 # - Add About UI
@@ -62,6 +67,14 @@ class MainUi(QMainWindow):
         text = utils.pretty_print_dict(self.clf.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
+        # Add matplotlib widget
+        self.vbox         = QVBoxLayout()
+        self.MplCanvas    = DynamicMplCanvas()
+        self.navi_toolbar = NavigationToolbar(self.MplCanvas, self)
+        self.vbox.addWidget(self.MplCanvas)
+        self.vbox.addWidget(self.navi_toolbar)
+        self.vbox.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.widget_Plot.setLayout(self.vbox)
 
         ########################
         # CONNECT FILE MENU UI #
@@ -69,7 +82,6 @@ class MainUi(QMainWindow):
 
         # Exit button (TODO: ADD ARE YOU SURE BEFORE EXITING)
         self.menuItem_Exit.triggered.connect(self.close)
-
         self.menuItem_About.triggered.connect(AboutUi)
 
 
@@ -158,6 +170,9 @@ class MainUi(QMainWindow):
                 else:
                     pass
 
+                # Add sample ID variable to data
+                self.data['Sample'] = np.arange(self.data.shape[0]).astype('int')
+            
             except Exception as e:
                 pass
 

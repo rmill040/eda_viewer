@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QDialog, QGridLayout, QIcon, QLabel, QPushButton, 
                          QSizePolicy, QSpacerItem)
@@ -109,7 +108,6 @@ class AboutUi(object):
         self.okButton.clicked.connect(self.dialog.close)
 
         # Show QDialog
-        self.dialog.setWindowIcon(QIcon('../icons/information-outline.png'))
         self.dialog.exec_()
 
 
