@@ -3,6 +3,7 @@ from __future__ import division, print_function
 
 import json
 import os
+import pandas as pd
 from PySide.QtCore import QFile, QMetaObject
 from PySide.QtGui import QMessageBox
 from PySide.QtUiTools import QUiLoader
@@ -31,10 +32,11 @@ WEBSITE        = "https://github.com/rmill040/eda_viewer"
 UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
 USE_DARK_THEME = True
 
-DTYPES_MAPPING = {'int64': 'integer', 
+DTYPE_TO_LABEL = {'int64': 'integer', 
                   'float64': 'float',
                   'object': 'object',
                   'datetime64[ns]': 'datetime'}
+LABEL_TO_DTYPE = {value: key for key, value in DTYPE_TO_LABEL.iteritems()}
 LINK_MODEL_API = {
     'Classification': {
         'Random Forests': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html',
