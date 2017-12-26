@@ -51,6 +51,46 @@ class MainUi(QMainWindow):
         self.statusBar.showMessage("""Click "Load Data" button to begin""")
         self.tabWidget_Analysis.setCurrentIndex(0)
 
+
+        ################
+        # FILE MENU UI #
+        ################
+
+        # Exit button (TODO: ADD ARE YOU SURE BEFORE EXITING)
+        self.menuItem_Exit.triggered.connect(self.close)
+        self.menuItem_About.triggered.connect(AboutUi)
+
+
+        #####################
+        # TAB 1 DATA TAB UI #
+        #####################
+
+        # Connect load data button
+        self.data_loaded = False
+        self.tab1_pushButton_LoadData.clicked.connect(self.tab1_pushButton_Load)
+
+        # Connect variable names in table widget to item changed signal so that when
+        # user changes the label, the app automatically updates other components with 
+        # new variable name. The self.already_changed attribute is a "hack" that helps control
+        # the app from repeating error messages twice. Specifically, the item changed 
+        # function is called every time a variable name is changed -- so when a user
+        # inputs an invalid variable name, that is change 1 and the item changed function
+        # is called. Then the function changes the variable name back to its original, valid
+        # name and that is change 2 and the function is called again.
+        self.already_changed = False
+        self.tab1_tableWidget_VariableInfo.itemChanged.connect(self.tab1_tableWidget_textChanged)
+
+
+        ###########################
+        # TAB 2 UNIVARIATE TAB UI #
+        ###########################
+
+        # ADD HERE
+
+        #######################
+        # TAB 3 BIVARIATE TAB #
+        #######################
+
         # Populate combo box for model names
         self.model_type = self.tab3_comboBox_ModelType.currentText()
         self.tab3_comboBox_ModelName.addItems(utils.LINK_MODEL_API[self.model_type].keys())
@@ -68,34 +108,7 @@ class MainUi(QMainWindow):
         text = utils.pretty_print_dict(self.clf.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
-
-        ########################
-        # CONNECT FILE MENU UI #
-        ########################
-
-        # Exit button (TODO: ADD ARE YOU SURE BEFORE EXITING)
-        self.menuItem_Exit.triggered.connect(self.close)
-        self.menuItem_About.triggered.connect(AboutUi)
-
-
-        #############################
-        # CONNECT TAB 1 DATA TAB UI #
-        #############################
-
-        self.tab1_pushButton_LoadData.clicked.connect(self.tab1_pushButton_Load)
-        self.tab1_pushButton_UpdateNames.clicked.connect(self.tab1_pushButton_Update)
-
-
-        ###################################
-        # CONNECT TAB 2 UNIVARIATE TAB UI #
-        ###################################
-
-
-
-        ###############################
-        # CONNECT TAB 3 BIVARIATE TAB #
-        ###############################
-
+        # Connect combo box functions
         self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_comboBox_addModelNames)
         self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_label_setLink)
         self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_plainTextEdit_setModelParams)
@@ -104,9 +117,9 @@ class MainUi(QMainWindow):
         self.tab3_comboBox_ModelName.activated[str].connect(self.tab3_plainTextEdit_setModelParams)
 
 
-        ########################
-        # CONNECT VISUALIZE UI #
-        ########################
+        ################
+        # VISUALIZE UI #
+        ################
 
         # Add matplotlib widget
         self.vbox         = QVBoxLayout()
@@ -117,15 +130,112 @@ class MainUi(QMainWindow):
         self.vbox.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.widget_Plot.setLayout(self.vbox)
 
+        # Connect generate button
+        self.pushButton_Generate.clicked.connect(self.pushButton_GenerateResults)
 
-    #########################
-    # TAB 1 DATA: FUNCTIONS #
-    #########################
+    # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
+
+
+    ###########################
+    # VISUALIZE UI: FUNCTIONS #
+    ###########################
+
+    def pushButton_GenerateResults(self):
+        """ADD DESCRIPTION"""
+        if self.data_loaded:
+            # Plotting information
+            xlabel    = self.comboBox_XAxis.currentText()
+            ylabel    = self.comboBox_YAxis.currentText()
+            plot_type = self.comboBox_PlotType.currentText()
+
+            # Create plot
+            try:
+                self.MplCanvas.update_plot(sample=self.data['Sample'],
+                                           x=self.data[xlabel] if xlabel != 'None' else None,
+                                           y=self.data[ylabel] if ylabel != 'None' else None,
+                                           xlabel=xlabel,
+                                           ylabel=ylabel,
+                                           plot_type=plot_type)
+            except Exception as e:
+                utils.message_box(message="Error Generating %s Plot: " % plot_type,
+                                  informativeText="Reason:\n%s" % str(e),
+                                  windowTitle="Error Generating Plot",
+                                  type="error")
+                return
+
+        else:
+            utils.message_box(message="Error Generating Plot: %s" % plot_type,
+                              informativeText="Reason:\nNo data loaded",
+                              windowTitle="Error Generating Plot",
+                              type="error")            
+
+
+    ############################
+    # TAB 1 DATA UI: FUNCTIONS #
+    ############################
+
+
+    def tab1_tableWidget_textChanged(self):
+        """ADD DESCRIPTION"""
+        if self.data_loaded:
+
+            # Find current row that was edited
+            row                  = self.sender().currentRow()
+            new_var_name         = \
+                self.tab1_tableWidget_VariableInfo.item(row, 0).text()
+            
+            # If variable name not empty
+            if new_var_name:
+
+                # New variable name specified, so update names
+                if new_var_name not in self.var_names:
+                    # Update var_names list and update XY combo boxes
+                    self.statusBar.showMessage("Changed variable %s to name %s" % (self.var_names[row], new_var_name))
+                    self.var_names[row] = new_var_name
+                    self.data.columns   = self.var_names
+                    self.tab1_comboBox_updateXYAxis()
+                    self.already_changed = False
+
+                else:
+                    # Duplicate variable name passed, raise error
+                    if not self.already_changed:
+                        # Reset text back to original
+                        self.already_changed = True
+                        self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
+                        utils.message_box(message="Error Changing Variable Name: %s" % self.var_names[row],
+                                          informativeText="Reason:\n%s name already exists" % new_var_name,
+                                          windowTitle="Invalid Variable Name",
+                                          type="error")
+                    else:
+                        self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
+                        self.already_changed = False
+
+
+            # Empty variable name passed
+            else:
+                if not self.already_changed:
+                    # Reset text back to original
+                    self.already_changed = True
+                    self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
+                    utils.message_box(message="Error Changing Variable Name: %s" % self.var_names[row],
+                                      informativeText="Reason:\nBlank name specified",
+                                      windowTitle="Invalid Variable Name",
+                                      type="error")
+
+                else:
+                    self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
+                    self.already_changed = False
+
 
     def tab1_comboBox_updateXYAxis(self):
         """ADD DESCRIPTION"""
-        self.comboBox_XAxis.addItems(self.var_names)
-        self.comboBox_YAxis.addItems(self.var_names)
+        # Clear items first
+        self.comboBox_XAxis.clear()
+        self.comboBox_YAxis.clear()
+
+        # Update items
+        self.comboBox_XAxis.addItems(['None'] + self.var_names)
+        self.comboBox_YAxis.addItems(['None'] + self.var_names)
 
 
     def tab1_tableWidget_comboBox_updateDtype(self):
@@ -152,9 +262,8 @@ class MainUi(QMainWindow):
             self.statusBar.showMessage("Converted %s to data type %s" % (var_name, new_dtype))
 
         except Exception as e:
-            self.statusBar.showMessage("Error changing %s to data type %s" % (var_name, new_dtype))
-            utils.message_box(message="Error Changing Data Type",
-                              informativeText="Error changing data type of %s to %s" % (var_name, new_dtype),
+            utils.message_box(message="Error Changing Data Type Data Type %s to %s" % (var_name, new_dtype),
+                              informativeText="Reason:\n%s" % str(e),
                               windowTitle="Data Conversion Error",
                               type="error")
 
@@ -164,29 +273,6 @@ class MainUi(QMainWindow):
                                                        QtCore.Qt.MatchFixedString))
 
             return
-
-
-    def tab1_pushButton_Update(self):
-        """ADD DESCRIPTION"""
-        utils.message_box(message="NOT IMPLEMENTED",
-                          informativeText="WRITE IT",
-                          type="information",
-                          windowTitle="NOT IMPLEMENTED")
-        # # Find which widget sent the signal and get row location
-        # clicked_widget = self.sender().parent()
-        # index          = self.tab1_tableWidget_VariableInfo.indexAt(clicked_widget.pos())
-        # row            = index.row()
-        # new_var_name   = \
-        #     self.tab1_tableWidget_VariableInfo.item(row, 0).text()
-        # if new_var_name: 
-        #     self.statusBar.showMessage("Changed variable %s to name %s" % (self.var_names[row], new_var_name))
-        #     self.var_names[row] = new_var_name
-        # else:
-        #     utils.message_box(message="Error Changing Variable Name",
-        #                       informativeText="Error changing variable %s to name %s" % (self.var_names[row], new_var_name),
-        #                       windowTitle="Invalid Variable Name",
-        #                       type="error")
-        #     return
 
 
     def tab1_lcd_updateNumbers(self):
@@ -281,9 +367,11 @@ class MainUi(QMainWindow):
             self.tab1_comboBox_updateXYAxis()
             self.statusBar.showMessage("Data loaded with %d rows and %d columns" % \
                                         (self.data.shape))
+            self.data_loaded = True
+
         else:
-            utils.message_box(message="Error Loading Data",
-                              informativeText="Error loading file %s because %s" % (self.file, signal),
+            utils.message_box(message="Error Loading Data File %s" % self.file,
+                              informativeText="Reason:\n%s" % signal,
                               windowTitle="I/O Error",
                               type="error")
             return
@@ -302,12 +390,13 @@ class MainUi(QMainWindow):
 
         # If a file is selected, try and open
         if file:
-            self.file   = file # Define as attribute for accessing in other functions
-            self.thread = self.tab1_Thread_LoadData(file)
+            self.data_loaded = False
+            self.file        = file # Define as attribute for accessing in other functions
+            self.thread      = self.tab1_Thread_LoadData(file)
             self.thread.data_signal.connect(self.tab1_Slot_LoadData)
             self.thread.error_signal.connect(self.tab1_Slot_LoadData)
             self.thread.start()
-            
+
 
     def tab1_tableWidget_addRow(self, var_name, dtype):
         """Adds new row to a table widget
@@ -357,9 +446,14 @@ class MainUi(QMainWindow):
             self.tab1_tableWidget_VariableInfo.setItem(idx, 1, fixed_item)
 
 
-    ##############################
-    # TAB 3 BIVARIATE: FUNCTIONS #
-    ##############################
+    ##################################
+    # TAB 2 UNIVARIATE UI: FUNCTIONS #
+    ##################################
+
+
+    #################################
+    # TAB 3 BIVARIATE UI: FUNCTIONS #
+    #################################
 
     def tab3_comboBox_addModelNames(self):
         """ADD DESCRIPTION"""

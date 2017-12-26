@@ -420,13 +420,6 @@
                </property>
               </widget>
              </item>
-             <item row="10" column="0" colspan="2">
-              <widget class="QPushButton" name="tab1_pushButton_UpdateNames">
-               <property name="text">
-                <string>Update Names</string>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="0" colspan="2">
               <widget class="QLabel" name="tab1_label_DataTypes">
                <property name="sizePolicy">
@@ -478,13 +471,6 @@
               <widget class="QLCDNumber" name="tab1_lcdNumber_Columns">
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="9" column="0" colspan="2">
-              <widget class="Line" name="tab1_line2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </item>

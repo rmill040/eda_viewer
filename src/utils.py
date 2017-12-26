@@ -192,7 +192,7 @@ def message_box(message, informativeText, windowTitle, type, question=False):
     if question:
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        return msg.exec_()
+        msg.exec_()
     else:
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()

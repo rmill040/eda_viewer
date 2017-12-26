@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 from PySide import QtCore
 from PySide.QtGui import QApplication, QSizePolicy, QVBoxLayout, QWidget
 
+# Custom functions
+from utils import message_box
+
 # Set plotting style
 plt.style.use('seaborn-darkgrid')
 
@@ -24,10 +27,10 @@ class MplCanvas(FigureCanvas):
     Returns
     -------
     """
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = plt.figure(dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        FigureCanvas.__init__(self, fig)
+    def __init__(self, parent=None, dpi=100):
+        self.fig  = plt.figure(dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
@@ -77,12 +80,12 @@ class DynamicMplCanvas(MplCanvas):
         
         # Histogram
         elif plot_type == 'Histogram':
-            if x: self.axes.hist(x, alpha=.6, label=xlabel)
-            if y: self.axes.hist(y, alpha=.6, label=ylabel)
+            if x is not None: self.axes.hist(x, alpha=.6, label=xlabel)
+            if y is not None: self.axes.hist(y, alpha=.6, label=ylabel)
             plt.legend()
-            if x and y:
+            if x is not None and y is not None:
                 title_str = "Histogram: {} and {}".format(xlabel, ylabel)
-            if x and not y:
+            if x is not None and y is None:
                 title_str = "Histogram: {}".format(xlabel)
             else:
                 title_str = "Histogram: {}".format(ylabel)
@@ -90,24 +93,32 @@ class DynamicMplCanvas(MplCanvas):
         # Bar Chart
         elif plot_type == 'Bar Chart':
             xlabel = 'Sample'
-            if x: self.axes.bar(sample, x, alpha=.6, label=xlabel)
-            if y: self.axes.bar(sample, y, alpha=.6, label=ylabel)
+            if x is not None: self.axes.bar(sample, x, alpha=.6, label=xlabel)
+            if y is not None: self.axes.bar(sample, y, alpha=.6, label=ylabel)
             plt.legend()
-            if x and y:
+            if x is not None and y is not None:
                 title_str = "Bar Chart: {} and {}".format(xlabel, ylabel)
-            if x and not y:
+            if x is not None and y is None:
                 title_str = "Bar Chart: {}".format(xlabel)
             else:
                 title_str = "Bar Chart: {}".format(ylabel)
 
         # Boxplot
         else:
-            if x:
+            if x is not None and y is None:
                 self.axes.boxplot(x)
                 title_str = "Boxplot: {}".format(xlabel)
-            if not x and y: 
+            if x is None and y is not None: 
                 self.axes.boxplot(y)
                 title_str = "Boxplot: {}".format(ylabel)
+            if x is not None and y is not None:
+                message_box(message="Warning: Only Plotting %s" % xlabel,
+                            informativeText="Boxplots for both x and y not implemented yet",
+                            windowTitle="Warning: Not Implemented",
+                            type="warning")
+                self.axes.boxplot(x)
+                title_str = "Boxplot: {}".format(xlabel)
+
 
         # Set labels, title, and layout
         self.axes.set_xlabel(xlabel)
