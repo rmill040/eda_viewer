@@ -13,6 +13,7 @@ import pandas as pd
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
                           QMainWindow, QTableWidgetItem, QVBoxLayout, QWidget)
+from prettytable import PrettyTable
 import qdarkstyle
 import sys
 from threading import Thread
@@ -23,13 +24,21 @@ import utils
 from visual import DynamicMplCanvas
 
 # TODO:
-# - Add tooltips
-# - Add error checking
-# - Add message box popups
-# - Add threading (maybe make decorator?)
+# - Add tooltips (use Designer)
+# - Add error checking (consider making separate helper functions to check data configuration)
+# - Add status bar updates where necessary
+# - Add functionality for machine learning (use Threading)
 # - Add keyboard shortcuts
+# - Add threading for summary statistics (large samples may freeze main thread for a second or so)
+# - Add loading bars where appropriate
 # - Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
-# - Finish adding functions and connecting
+# - Connect all menu item buttons
+# - Automatically generate two subplots when two variables are specified for boxplots
+# - Add other univariate statistics for tab 2 
+#   variance, skewness, kurtosis, coefficient of variation, CIs, IQR
+# - Try better printing for tab 2 univariate statistics
+# - Build freeze scripts for different operating systems
+# - Unit tests
 
 
 class MainUi(QMainWindow):
@@ -50,6 +59,13 @@ class MainUi(QMainWindow):
         self.setWindowTitle('Exploratory Data Analysis Viewer')
         self.statusBar.showMessage("""Click "Load Data" button to begin""")
         self.tabWidget_Analysis.setCurrentIndex(0)
+
+        # Enable add headers for table widgets
+        self.tab1_tableWidget_VariableInfo.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Xstats.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Ystats.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Xfreq.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Yfreq.horizontalHeader().setVisible(True)
 
 
         ################
@@ -97,7 +113,7 @@ class MainUi(QMainWindow):
 
         # Activate URL for model API links
         self.model_name = self.tab3_comboBox_ModelName.currentText()
-        self.url = utils.LINK_MODEL_API[self.model_type][self.model_name]
+        self.url        = utils.LINK_MODEL_API[self.model_type][self.model_name]
         self.tab3_label_LinkToModelAPI.setOpenExternalLinks(True)
         self.tab3_label_LinkToModelAPI.setText(
             '''<a href='{}'>Link to Model API</a>'''.format(self.url)
@@ -105,7 +121,7 @@ class MainUi(QMainWindow):
 
         # Add model parameters to plain text widget
         self.clf = utils.get_model(model_name=self.model_name, model_type=self.model_type)
-        text = utils.pretty_print_dict(self.clf.get_params())
+        text     = utils.pretty_print_dict(self.clf.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
         # Connect combo box functions
@@ -143,30 +159,75 @@ class MainUi(QMainWindow):
     def pushButton_GenerateResults(self):
         """ADD DESCRIPTION"""
         if self.data_loaded:
-            # Plotting information
+            # Information for calculations
             xlabel    = self.comboBox_XAxis.currentText()
             ylabel    = self.comboBox_YAxis.currentText()
             plot_type = self.comboBox_PlotType.currentText()
 
+            if xlabel == 'None' and ylabel == 'None':
+                utils.message_box(message="No Variables Selected for Analysis",
+                                  informativeText="Select X and/or Y variable and try again",
+                                  windowTitle="No Variables Selected",
+                                  type="error")
+                return
+
             # Create plot
             try:
+                # Check for valid data based on plot type
+                if plot_type in ['Scatter', 'Line', 'Scatter + Line']: 
+                    
+                    # Need X variable
+                    if xlabel == 'None':
+                        utils.message_box(message="Error Generating %s Plot" % plot_type,
+                                          informativeText="Reason:\nNo X variable selected",
+                                          windowTitle="Error Generating Plot",
+                                          type="error")
+                        return
+                    
+                    # Also need Y variable
+                    if ylabel == 'None':
+                        utils.message_box(message="Error Generating %s Plot" % plot_type,
+                                          informativeText="Reason:\nNo Y variable selected",
+                                          windowTitle="Error Generating Plot",
+                                          type="error")
+                        return
+
+                # Make plot
                 self.MplCanvas.update_plot(sample=self.data['Sample'],
                                            x=self.data[xlabel] if xlabel != 'None' else None,
                                            y=self.data[ylabel] if ylabel != 'None' else None,
                                            xlabel=xlabel,
                                            ylabel=ylabel,
                                            plot_type=plot_type)
+            
+            # Catch plotting exception here
             except Exception as e:
-                utils.message_box(message="Error Generating %s Plot: " % plot_type,
+                utils.message_box(message="Error Generating %s Plot" % plot_type,
                                   informativeText="Reason:\n%s" % str(e),
                                   windowTitle="Error Generating Plot",
                                   type="error")
                 return
 
+            # Calculate descriptive statistics
+            try:
+                self.tab2_UnivariateDescriptives(x=self.data[xlabel] if xlabel != 'None' else None,
+                                                 y=self.data[ylabel] if ylabel != 'None' else None,
+                                                 xlabel=xlabel,
+                                                 ylabel=ylabel)
+            
+            # Catch descriptive statistics exception here
+            except Exception as e:
+                utils.message_box(message="Error Calculating Univariate Statistics",
+                                  informativeText="Reason:\n%s" % str(e),
+                                  windowTitle="Error Calculating Statistics",
+                                  type="error")
+                return
+
+        # Data not loaded yet
         else:
-            utils.message_box(message="Error Generating Plot: %s" % plot_type,
+            utils.message_box(message="Error Generating Results",
                               informativeText="Reason:\nNo data loaded",
-                              windowTitle="Error Generating Plot",
+                              windowTitle="Error Generating Results",
                               type="error")            
 
 
@@ -271,7 +332,6 @@ class MainUi(QMainWindow):
             comboBox = self.tab1_tableWidget_VariableInfo.cellWidget(row, 1).findChild(QComboBox)
             comboBox.setCurrentIndex(comboBox.findText(utils.DTYPE_TO_LABEL[self.dtypes[row]], 
                                                        QtCore.Qt.MatchFixedString))
-
             return
 
 
@@ -449,6 +509,95 @@ class MainUi(QMainWindow):
     ##################################
     # TAB 2 UNIVARIATE UI: FUNCTIONS #
     ##################################
+
+    # TODO: MAKE THIS A SEPARATE THREAD (CLASS)
+    def tab2_UnivariateDescriptives(self, x, y, xlabel, ylabel):
+        """ADD DESCRIPTION"""
+        # X variable
+        if xlabel != 'None':
+            # Calculate descriptives and populate table
+            self.tab2_tableWidget_Xstats.setRowCount(0)
+            x_stats = utils.univariate_statistics(x)
+            for key, value in x_stats.iteritems():
+
+                # Insert row
+                idx = self.tab2_tableWidget_Xstats.rowCount()
+                self.tab2_tableWidget_Xstats.insertRow(idx)
+
+                # Create table items and make sure not editable
+                name_item = QTableWidgetItem(key)
+                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                key_item  = QTableWidgetItem('%.3f' % value)
+                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                # Insert items into table
+                self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
+                self.tab2_tableWidget_Xstats.setItem(idx, 1, key_item)
+
+            # Calculate frequencies and populate table
+            x_freq = pd.value_counts(x)
+            for i in xrange(x_freq.shape[0]):
+
+                # Insert row
+                idx = self.tab2_tableWidget_Xfreq.rowCount()
+                self.tab2_tableWidget_Xfreq.insertRow(idx)
+
+                # Create table items and make sure not editable
+                name_item = QTableWidgetItem('%.3f' % x_freq.index[i])
+                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                key_item  = QTableWidgetItem('%d' % x_freq.values[1])
+                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                # Insert items into table
+                self.tab2_tableWidget_Xfreq.setItem(idx, 0, name_item)
+                self.tab2_tableWidget_Xfreq.setItem(idx, 1, key_item)
+
+        # Y variable
+        if ylabel != 'None':
+            # Calculate descriptives and populate table
+            self.tab2_tableWidget_Ystats.setRowCount(0)
+            y_stats = utils.univariate_statistics(y)
+            for key, value in y_stats.iteritems():
+
+                # Insert row
+                idx = self.tab2_tableWidget_Ystats.rowCount()
+                self.tab2_tableWidget_Ystats.insertRow(idx)
+
+                # Create table items and make sure not editable
+                name_item = QTableWidgetItem(key)
+                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                key_item  = QTableWidgetItem('%.3f' % value)
+                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                # Insert items into table
+                self.tab2_tableWidget_Ystats.setItem(idx, 0, name_item)
+                self.tab2_tableWidget_Ystats.setItem(idx, 1, key_item)
+
+            # Calculate frequencies and populate table
+            y_freq = pd.value_counts(y)
+            for i in xrange(y_freq.shape[0]):
+
+                # Insert row
+                idx = self.tab2_tableWidget_Yfreq.rowCount()
+                self.tab2_tableWidget_Yfreq.insertRow(idx)
+
+                # Create table items and make sure not editable
+                name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
+                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                key_item  = QTableWidgetItem('%d' % y_freq.values[1])
+                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                # Insert items into table
+                self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
+                self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
 
 
     #################################

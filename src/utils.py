@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 
+from collections import OrderedDict
 import json
+import numpy as np
 import os
 import pandas as pd
 from PySide.QtCore import QFile, QMetaObject
 from PySide.QtGui import QMessageBox
 from PySide.QtUiTools import QUiLoader
+import scipy.stats as ss
 from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
 from sklearn.ensemble import (ExtraTreesClassifier, ExtraTreesRegressor,
                               GradientBoostingClassifier, GradientBoostingRegressor,
@@ -196,3 +199,68 @@ def message_box(message, informativeText, windowTitle, type, question=False):
     else:
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
+
+
+def univariate_statistics(data):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    results = OrderedDict()
+    if 'int' in str(data.dtypes) or 'float' in str(data.dtypes):
+        results['Mean']     = np.mean(data)
+        results['Median']   = np.median(data)
+        results['Variance'] = np.var(data)
+        results['SD']       = np.std(data)
+        results['Skewness'] = ss.skew(data)
+        results['Kurtosis'] = ss.kurtosis(data)
+        results['CV']       = results['SD']/results['Mean']
+        results['Minimum']  = np.min(data)
+        results['Maximum']  = np.max(data)
+        results['P 0.5%']   = np.percentile(data, 0.5)
+        results['P 2.5%']   = np.percentile(data, 2.5)
+        results['P 25%']    = np.percentile(data, 25)
+        results['P 75%']     = np.percentile(data, 75)
+        results['P 97.5%']  = np.percentile(data, 97.5)
+        results['P 99.5%']  = np.percentile(data, 99.5)
+        results['IQR']      = results['P 75%'] - results['P 25%']
+
+        # # Format string
+        # results_str = '-'*28
+        # results_str += '\n{:<15}{:<15}\n'.format('Statistic', 'Value')
+        # results_str += '-'*28
+        # results_str += '\n'
+        # for key, value in results.iteritems():
+        #     results_str += '{:<15}{:<15.3f}'.format(key, value)
+        #     if key != 'IQR': results_str += '\n'
+        # results_str += '\n'
+        # results_str += '-'*28
+
+    else:
+        results['Unique']  = len(np.unique(data))
+        results['Mode']    = ss.mode(data)[0]
+        results['Minimum'] = np.min(data)
+        results['Maximum'] = np.max(data)
+
+        # # Format string
+        # results_str = '-'*28
+        # results_str += '\n{:<15}{:<15}\n'.format('Statistic', 'Value')
+        # results_str += '-'*28
+        # results_str += '\n'
+        # for key, value in results.iteritems():
+        #     results_str += '{:<15}{:<15.3f}'.format(key, value)
+        #     if key != 'Maximum': results_str += '\n'
+        # results_str += '\n'
+        # results_str += '-'*28
+
+    return results
+
+
+if __name__ == "__main__":
+    import numpy as np
+    dat = pd.DataFrame(np.random.normal(10000, 1000, 100000), columns=['x1'])
+    univariate_statistics(dat['x1'])

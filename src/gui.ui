@@ -276,6 +276,7 @@
             <widget class="QLabel" name="tab1_label_DataSummary">
              <property name="font">
               <font>
+               <pointsize>12</pointsize>
                <underline>true</underline>
               </font>
              </property>
@@ -303,6 +304,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>12</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -322,6 +324,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -329,6 +336,11 @@
              </item>
              <item row="6" column="1">
               <widget class="QLCDNumber" name="tab1_lcdNumber_Float">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -341,6 +353,11 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
                </property>
                <property name="text">
                 <string>Object</string>
@@ -355,6 +372,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -362,6 +384,11 @@
              </item>
              <item row="7" column="1">
               <widget class="QLCDNumber" name="tab1_lcdNumber_Object">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -374,6 +401,11 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
                </property>
                <property name="text">
                 <string>Float</string>
@@ -388,6 +420,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Rows</string>
                </property>
@@ -395,6 +432,11 @@
              </item>
              <item row="2" column="0" colspan="2">
               <widget class="Line" name="tab1_line1">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -402,6 +444,11 @@
              </item>
              <item row="8" column="1">
               <widget class="QLCDNumber" name="tab1_lcdNumber_DateTime">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -414,6 +461,11 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
                </property>
                <property name="text">
                 <string>Date/Time</string>
@@ -430,6 +482,7 @@
                </property>
                <property name="font">
                 <font>
+                 <pointsize>12</pointsize>
                  <underline>true</underline>
                 </font>
                </property>
@@ -449,6 +502,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Columns</string>
                </property>
@@ -462,6 +520,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Integer</string>
                </property>
@@ -469,6 +532,11 @@
              </item>
              <item row="1" column="1">
               <widget class="QLCDNumber" name="tab1_lcdNumber_Columns">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -478,6 +546,11 @@
            </item>
            <item row="1" column="1" colspan="2">
             <widget class="QTableWidget" name="tab1_tableWidget_VariableInfo">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
              </property>
@@ -500,7 +573,7 @@
               <bool>false</bool>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
@@ -545,14 +618,60 @@
            <string>Univariate</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="0">
-            <widget class="QLabel" name="tab2_label_XVariable">
-             <property name="text">
-              <string>X-Variable</string>
+           <item row="2" column="1">
+            <widget class="QTableWidget" name="tab2_tableWidget_Yfreq">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
              </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
+             <property name="frameShape">
+              <enum>QFrame::WinPanel</enum>
              </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Count</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QTableWidget" name="tab2_tableWidget_Ystats">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::WinPanel</enum>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Statistic</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
             </widget>
            </item>
            <item row="0" column="1">
@@ -565,30 +684,70 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QPlainTextEdit" name="tab2_plainTextEdit_XVariable">
-             <property name="frameShape">
-              <enum>QFrame::WinPanel</enum>
+           <item row="0" column="0">
+            <widget class="QLabel" name="tab2_label_XVariable">
+             <property name="text">
+              <string>X-Variable</string>
              </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-             <property name="plainText">
-              <string/>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QPlainTextEdit" name="tab2_plainTextEdit_YVariable">
+           <item row="1" column="0">
+            <widget class="QTableWidget" name="tab2_tableWidget_Xstats">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
              </property>
-             <property name="readOnly">
+             <property name="sortingEnabled">
               <bool>true</bool>
              </property>
-             <property name="plainText">
-              <string/>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Statistic</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QTableWidget" name="tab2_tableWidget_Xfreq">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
              </property>
+             <property name="frameShape">
+              <enum>QFrame::WinPanel</enum>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Count</string>
+              </property>
+             </column>
             </widget>
            </item>
           </layout>
@@ -857,7 +1016,7 @@
      <property name="geometry">
       <rect>
        <x>239</x>
-       <y>134</y>
+       <y>135</y>
        <width>152</width>
        <height>138</height>
       </rect>
@@ -962,7 +1121,7 @@
   <action name="menuItem_Data">
    <property name="icon">
     <iconset>
-     <normaloff>../icons/chart-timeline.png</normaloff>../icons/chart-timeline.png</iconset>
+     <normaloff>../icons/chart-line.png</normaloff>../icons/chart-line.png</iconset>
    </property>
    <property name="text">
     <string>Data</string>
@@ -971,7 +1130,7 @@
   <action name="menuItem_Plot">
    <property name="icon">
     <iconset>
-     <normaloff>../icons/chart-line.png</normaloff>../icons/chart-line.png</iconset>
+     <normaloff>../icons/image-area.png</normaloff>../icons/image-area.png</iconset>
    </property>
    <property name="text">
     <string>Plot</string>
