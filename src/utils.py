@@ -260,7 +260,59 @@ def univariate_statistics(data):
     return results
 
 
+def is_numeric(data):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    if 'int' in str(data.dtypes) or 'float' in str(data.dtypes):
+        return 1
+    else:
+        return 0
+
+
+def value_counts_grouped(data, value_counts):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    # Calculate counts and bins
+    counts, bins  = np.histogram(data, bins='doane')
+    n_bins        = len(bins)
+
+    # Create grouped frequency table
+    index, values = [], []
+    for i in xrange(n_bins-1):
+
+        # Last interval is closed
+        if i == (n_bins-2):
+            index.append(
+                '[{:.3f}, {:.3f}]'.format(bins[i], bins[i+1])
+                )
+        
+        # Other intervals are half-open (open to left, closed to right)
+        else:
+            index.append(
+                '[{:.3f}, {:.3f})'.format(bins[i], bins[i+1])
+                )
+        
+        values.append(counts[i])
+
+    return pd.DataFrame(values, columns=['Count'], index=index)
+
+
+
+
+
 if __name__ == "__main__":
-    import numpy as np
-    dat = pd.DataFrame(np.random.normal(10000, 1000, 100000), columns=['x1'])
-    univariate_statistics(dat['x1'])
+    dat = pd.DataFrame(np.arange(100), columns=['x1'])
+    #univariate_statistics(dat['x1'])
+    print(value_counts_grouped(dat, pd.value_counts(dat['x1'])))

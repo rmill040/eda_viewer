@@ -52,6 +52,22 @@ class DynamicMplCanvas(MplCanvas):
         plt.tight_layout()
 
 
+    def _reset_plots(self):
+        """ADD DESCRIPTION"""
+        try:
+            self.fig.delaxes(self.axes)
+            self.axes = self.fig.add_subplot(111)
+        except:
+            pass
+
+        try:
+            self.fig.delaxes(self.axes_x)
+            self.fig.delaxes(self.axes_y)
+            self.axes = self.fig.add_subplot(111)
+        except:
+            pass
+
+
     def update_plot(self, sample, x, y, xlabel, ylabel, plot_type):
         """ADD
         
@@ -61,69 +77,108 @@ class DynamicMplCanvas(MplCanvas):
         Returns
         -------
         """
-        self.axes.clear()
+        # Clear plotting canvas
+        self._reset_plots()
 
         # Scatter plot
         if plot_type == 'Scatter':
-            self.axes.scatter(x, y)
             title_str = "Scatter: {} x {}".format(xlabel, ylabel)
-        
+            self.axes.scatter(x, y)
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel(ylabel)
+            self.axes.set_title(title_str)
+
         # Line plot
         elif plot_type == 'Line':
-            self.axes.plot(x, y)
             title_str = "Line: {} x {}".format(xlabel, ylabel)
+            self.axes.plot(x, y)
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel(ylabel)
+            self.axes.set_title(title_str)
         
         # Scatter + Line plot
         elif plot_type == 'Scatter + Line':
-            self.axes.plot(x, y, '-o')
             title_str = "Scatter + Line: {} x {}".format(xlabel, ylabel)
+            self.axes.plot(x, y, '-o')
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel(ylabel)
+            self.axes.set_title(title_str)
         
         # Histogram
         elif plot_type == 'Histogram':
-            if x is not None: self.axes.hist(x, alpha=.6, label=xlabel)
-            if y is not None: self.axes.hist(y, alpha=.6, label=ylabel)
-            plt.legend()
+            if x is not None: self.axes.hist(x, alpha=.6, label=xlabel, color='blue')
+            if y is not None: self.axes.hist(y, alpha=.6, label=ylabel, color='green')
+            
+            # Add labels and title
             if x is not None and y is not None:
                 title_str = "Histogram: {} and {}".format(xlabel, ylabel)
-            if x is not None and y is None:
+                self.axes.set_xlabel(xlabel + ' and ' + ylabel)
+            
+            elif x is not None and y is None:
                 title_str = "Histogram: {}".format(xlabel)
+                self.axes.set_xlabel(xlabel)
+            
             else:
                 title_str = "Histogram: {}".format(ylabel)
+                self.axes.set_xlabel(ylabel)
+
+            # Set title for any histogram
+            self.axes.set_title(title_str)
+            self.axes.set_ylabel('Value')
+            plt.legend()
+
 
         # Bar Chart
         elif plot_type == 'Bar Chart':
             xlabel = 'Sample'
-            if x is not None: self.axes.bar(sample, x, alpha=.6, label=xlabel)
-            if y is not None: self.axes.bar(sample, y, alpha=.6, label=ylabel)
-            plt.legend()
+            if x is not None: self.axes.bar(sample, x, alpha=.6, label=xlabel, color='blue')
+            if y is not None: self.axes.bar(sample, y, alpha=.6, label=ylabel, color='green')
+
+            # Add labels and title
             if x is not None and y is not None:
                 title_str = "Bar Chart: {} and {}".format(xlabel, ylabel)
-            if x is not None and y is None:
+            
+            elif x is not None and y is None:
                 title_str = "Bar Chart: {}".format(xlabel)
+            
             else:
                 title_str = "Bar Chart: {}".format(ylabel)
+
+            # Set title for any bar chart
+            self.axes.set_title(title_str)
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel('Value')
+            plt.legend()
 
         # Boxplot
         else:
             if x is not None and y is None:
-                self.axes.boxplot(x)
                 title_str = "Boxplot: {}".format(xlabel)
-            if x is None and y is not None: 
-                self.axes.boxplot(y)
+                self.axes.boxplot(x)
+                self.axes.set_ylabel('Value')
+                self.axes.set_title(title_str)
+
+            elif x is None and y is not None: 
                 title_str = "Boxplot: {}".format(ylabel)
-            if x is not None and y is not None:
-                message_box(message="Warning: Only Plotting %s" % xlabel,
-                            informativeText="Boxplots for both x and y not implemented yet",
-                            windowTitle="Warning: Not Implemented",
-                            type="warning")
-                self.axes.boxplot(x)
-                title_str = "Boxplot: {}".format(xlabel)
+                self.axes.boxplot(y)
+                self.axes.set_ylabel('Value')
+                self.axes.set_title(title_str)
 
+            else:
+                self.fig.delaxes(self.axes)
 
-        # Set labels, title, and layout
-        self.axes.set_xlabel(xlabel)
-        self.axes.set_ylabel(ylabel)
-        self.axes.set_title(title_str)
+                # X variable
+                self.axes_x = self.fig.add_subplot(121)
+                self.axes_x.boxplot(x)
+                self.axes_x.set_ylabel("Value")
+                self.axes_x.set_title("Boxplot: {}".format(xlabel))
+
+                # Y variable
+                self.axes_y = self.fig.add_subplot(122)
+                self.axes_y.boxplot(y)
+                self.axes_y.set_title("Boxplot: {}".format(ylabel))
+
+        # Better layout and then draw
         plt.tight_layout()
         self.draw()
 

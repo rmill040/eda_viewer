@@ -12,8 +12,7 @@ import os
 import pandas as pd
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
-                          QMainWindow, QTableWidgetItem, QVBoxLayout, QWidget)
-from prettytable import PrettyTable
+                          QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
 import qdarkstyle
 import sys
 from threading import Thread
@@ -72,8 +71,11 @@ class MainUi(QMainWindow):
         # FILE MENU UI #
         ################
 
+        # Reset data button
+        self.menuItem_ResetData.triggered.connect(self.reset)
+
         # Exit button (TODO: ADD ARE YOU SURE BEFORE EXITING)
-        self.menuItem_Exit.triggered.connect(self.close)
+        self.menuItem_Exit.triggered.connect(self.exit)
         self.menuItem_About.triggered.connect(AboutUi)
 
 
@@ -83,7 +85,7 @@ class MainUi(QMainWindow):
 
         # Connect load data button
         self.data_loaded = False
-        self.tab1_pushButton_LoadData.clicked.connect(self.tab1_pushButton_Load)
+        self.tab1_pushButton_LoadData.clicked.connect(self.load_data)
 
         # Connect variable names in table widget to item changed signal so that when
         # user changes the label, the app automatically updates other components with 
@@ -94,7 +96,7 @@ class MainUi(QMainWindow):
         # is called. Then the function changes the variable name back to its original, valid
         # name and that is change 2 and the function is called again.
         self.already_changed = False
-        self.tab1_tableWidget_VariableInfo.itemChanged.connect(self.tab1_tableWidget_textChanged)
+        self.tab1_tableWidget_VariableInfo.itemChanged.connect(self.update_variable_name)
 
 
         ###########################
@@ -125,12 +127,12 @@ class MainUi(QMainWindow):
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
         # Connect combo box functions
-        self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_comboBox_addModelNames)
-        self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_label_setLink)
-        self.tab3_comboBox_ModelType.activated[str].connect(self.tab3_plainTextEdit_setModelParams)
+        self.tab3_comboBox_ModelType.activated[str].connect(self.add_model_names)
+        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_api_link)
+        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_parameters)
 
-        self.tab3_comboBox_ModelName.activated[str].connect(self.tab3_label_setLink)
-        self.tab3_comboBox_ModelName.activated[str].connect(self.tab3_plainTextEdit_setModelParams)
+        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_api_link)
+        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_parameters)
 
 
         ################
@@ -147,16 +149,48 @@ class MainUi(QMainWindow):
         self.widget_Plot.setLayout(self.vbox)
 
         # Connect generate button
-        self.pushButton_Generate.clicked.connect(self.pushButton_GenerateResults)
+        self.pushButton_Generate.clicked.connect(self.generate_results)
 
     # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
+
+    ######################
+    # MENU UI: FUNCTIONS #
+    ######################
+
+    def reset(self):
+        """ADD DESCRIPTION"""
+        if not self.data_loaded:
+            utils.message_box(message="Error With Data Reset",
+                              informativeText="Reason:\nNo data loaded",
+                              windowTitle="Error With Data Reset",
+                              type="error") 
+        else: 
+            reply = QMessageBox.question(self, 
+                                         'Message', 
+                                         "Are you sure you want to reset the data?", 
+                                         QMessageBox.Yes | QMessageBox.No, 
+                                         QMessageBox.No)
+            # Reset data if yes
+            if reply == QMessageBox.Yes: self.load_data()
+
+
+    def exit(self):
+        """ADD DESCRIPTION"""
+        reply = QMessageBox.question(self, 
+                                     'Message', 
+                                     "Are you sure you want to exit?", 
+                                     QMessageBox.Yes | QMessageBox.No, 
+                                     QMessageBox.No)
+        # Reset data if yes
+        if reply == QMessageBox.Yes: self.close()
+
 
 
     ###########################
     # VISUALIZE UI: FUNCTIONS #
     ###########################
 
-    def pushButton_GenerateResults(self):
+    def generate_results(self):
         """ADD DESCRIPTION"""
         if self.data_loaded:
             # Information for calculations
@@ -193,12 +227,22 @@ class MainUi(QMainWindow):
                         return
 
                 # Make plot
-                self.MplCanvas.update_plot(sample=self.data['Sample'],
-                                           x=self.data[xlabel] if xlabel != 'None' else None,
-                                           y=self.data[ylabel] if ylabel != 'None' else None,
-                                           xlabel=xlabel,
-                                           ylabel=ylabel,
-                                           plot_type=plot_type)
+                kwargs = {
+                    'sample': self.data['Sample'],
+                    'x': self.data[xlabel] if xlabel != 'None' else None,
+                    'y': self.data[ylabel] if ylabel != 'None' else None,
+                    'xlabel': xlabel,
+                    'ylabel': ylabel,
+                    'plot_type': plot_type
+                    }
+                Thread(target=self.MplCanvas.update_plot, kwargs=kwargs).start()
+
+                # self.MplCanvas.update_plot(sample=self.data['Sample'],
+                #                            x=self.data[xlabel] if xlabel != 'None' else None,
+                #                            y=self.data[ylabel] if ylabel != 'None' else None,
+                #                            xlabel=xlabel,
+                #                            ylabel=ylabel,
+                #                            plot_type=plot_type)
             
             # Catch plotting exception here
             except Exception as e:
@@ -210,10 +254,10 @@ class MainUi(QMainWindow):
 
             # Calculate descriptive statistics
             try:
-                self.tab2_UnivariateDescriptives(x=self.data[xlabel] if xlabel != 'None' else None,
-                                                 y=self.data[ylabel] if ylabel != 'None' else None,
-                                                 xlabel=xlabel,
-                                                 ylabel=ylabel)
+                self.univariate_descriptives(x=self.data[xlabel] if xlabel != 'None' else None,
+                                             y=self.data[ylabel] if ylabel != 'None' else None,
+                                             xlabel=xlabel,
+                                             ylabel=ylabel)
             
             # Catch descriptive statistics exception here
             except Exception as e:
@@ -228,15 +272,14 @@ class MainUi(QMainWindow):
             utils.message_box(message="Error Generating Results",
                               informativeText="Reason:\nNo data loaded",
                               windowTitle="Error Generating Results",
-                              type="error")            
+                              type="error")         
 
 
     ############################
     # TAB 1 DATA UI: FUNCTIONS #
     ############################
 
-
-    def tab1_tableWidget_textChanged(self):
+    def update_variable_name(self):
         """ADD DESCRIPTION"""
         if self.data_loaded:
 
@@ -254,7 +297,7 @@ class MainUi(QMainWindow):
                     self.statusBar.showMessage("Changed variable %s to name %s" % (self.var_names[row], new_var_name))
                     self.var_names[row] = new_var_name
                     self.data.columns   = self.var_names
-                    self.tab1_comboBox_updateXYAxis()
+                    self.update_combobox_xyaxis()
                     self.already_changed = False
 
                 else:
@@ -288,7 +331,7 @@ class MainUi(QMainWindow):
                     self.already_changed = False
 
 
-    def tab1_comboBox_updateXYAxis(self):
+    def update_combobox_xyaxis(self):
         """ADD DESCRIPTION"""
         # Clear items first
         self.comboBox_XAxis.clear()
@@ -299,7 +342,7 @@ class MainUi(QMainWindow):
         self.comboBox_YAxis.addItems(['None'] + self.var_names)
 
 
-    def tab1_tableWidget_comboBox_updateDtype(self):
+    def update_variable_dtype(self):
         """ADD DESCRIPTION"""
         # Find which widget sent the signal and get row location
         clicked_widget = self.sender().parent()
@@ -319,7 +362,7 @@ class MainUi(QMainWindow):
             # Update current data and update lcd displays
             self.data[var_name] = new_var
             self.dtypes         = map(str, self.data.dtypes)
-            self.tab1_lcd_updateNumbers()
+            self.update_lcd_numbers()
             self.statusBar.showMessage("Converted %s to data type %s" % (var_name, new_dtype))
 
         except Exception as e:
@@ -335,7 +378,7 @@ class MainUi(QMainWindow):
             return
 
 
-    def tab1_lcd_updateNumbers(self):
+    def update_lcd_numbers(self):
         """ADD DESCRIPTION"""
         # Update data types
         used_dtypes = set()
@@ -361,7 +404,7 @@ class MainUi(QMainWindow):
         if 'object' not in used_dtypes: self.tab1_lcdNumber_Object.display(0)
 
 
-    class tab1_Thread_LoadData(QtCore.QThread):
+    class ThreadLoadData(QtCore.QThread):
         """ADD
         
         Parameters
@@ -371,8 +414,7 @@ class MainUi(QMainWindow):
         -------
         """ 
         # Define signals
-        data_signal  = QtCore.Signal(pd.DataFrame)
-        error_signal = QtCore.Signal(str)
+        data_signal  = QtCore.Signal(list)
 
         def __init__(self, file):
             QtCore.QThread.__init__(self)
@@ -398,13 +440,13 @@ class MainUi(QMainWindow):
 
                 # Add sample ID variable to data and emit data signal
                 data.insert(0, 'Sample', np.arange(data.shape[0]).astype('int'))
-                self.data_signal.emit(data)
+                self.data_signal.emit([data])
 
             except Exception as e:
-                self.error_signal.emit(str(e))
+                self.data_signal.emit([str(e)])
 
 
-    def tab1_Slot_LoadData(self, signal):
+    def slot_ThreadLoadData(self, data_signal):
         """ADD
         
         Parameters
@@ -413,18 +455,25 @@ class MainUi(QMainWindow):
         Returns
         -------
         """
+        # Unpack signal
+        signal = data_signal[0]
+
+        # Check instance and update GUI
         if isinstance(signal, pd.DataFrame):
+            self.tab1_tableWidget_VariableInfo.setRowCount(0)
+
+            # Get data, map dtypes to string, and add rows to table
             self.data      = signal
             self.dtypes    = map(str, self.data.dtypes)
             self.var_names = self.data.columns.tolist()
             for var_name, dtype in zip(self.var_names, self.dtypes):
-                self.tab1_tableWidget_addRow(var_name, dtype)
+                self.add_data_row(var_name, dtype)
 
             # Update lcd displays and combo boxes for plotting
             self.tab1_lcdNumber_Rows.display(self.data.shape[0])
             self.tab1_lcdNumber_Columns.display(self.data.shape[1])
-            self.tab1_lcd_updateNumbers()
-            self.tab1_comboBox_updateXYAxis()
+            self.update_lcd_numbers()
+            self.update_combobox_xyaxis()
             self.statusBar.showMessage("Data loaded with %d rows and %d columns" % \
                                         (self.data.shape))
             self.data_loaded = True
@@ -434,10 +483,9 @@ class MainUi(QMainWindow):
                               informativeText="Reason:\n%s" % signal,
                               windowTitle="I/O Error",
                               type="error")
-            return
         
 
-    def tab1_pushButton_Load(self):
+    def load_data(self):
         """ADD DESCRIPTION"""
         # File dialog options for opening single file
         options = QFileDialog.Options()
@@ -452,13 +500,12 @@ class MainUi(QMainWindow):
         if file:
             self.data_loaded = False
             self.file        = file # Define as attribute for accessing in other functions
-            self.thread      = self.tab1_Thread_LoadData(file)
-            self.thread.data_signal.connect(self.tab1_Slot_LoadData)
-            self.thread.error_signal.connect(self.tab1_Slot_LoadData)
-            self.thread.start()
+            self.data_thread = self.ThreadLoadData(file)
+            self.data_thread.data_signal.connect(self.slot_ThreadLoadData)
+            self.data_thread.start()
 
 
-    def tab1_tableWidget_addRow(self, var_name, dtype):
+    def add_data_row(self, var_name, dtype):
         """Adds new row to a table widget
 
         Parameters
@@ -490,7 +537,7 @@ class MainUi(QMainWindow):
             for value in utils.DTYPE_TO_LABEL.itervalues(): combo_box.addItem(value)
             combo_box.setCurrentIndex(combo_box.findText(utils.DTYPE_TO_LABEL[dtype], 
                                                          QtCore.Qt.MatchFixedString))
-            combo_box.currentIndexChanged.connect(self.tab1_tableWidget_comboBox_updateDtype)
+            combo_box.currentIndexChanged.connect(self.update_variable_dtype)
 
             # Define a horizontal layout, format, and add to row
             layout = QHBoxLayout(cell_widget)
@@ -510,108 +557,217 @@ class MainUi(QMainWindow):
     # TAB 2 UNIVARIATE UI: FUNCTIONS #
     ##################################
 
-    # TODO: MAKE THIS A SEPARATE THREAD (CLASS)
-    def tab2_UnivariateDescriptives(self, x, y, xlabel, ylabel):
-        """ADD DESCRIPTION"""
-        # X variable
-        if xlabel != 'None':
-            # Calculate descriptives and populate table
-            self.tab2_tableWidget_Xstats.setRowCount(0)
-            x_stats = utils.univariate_statistics(x)
-            for key, value in x_stats.iteritems():
 
-                # Insert row
-                idx = self.tab2_tableWidget_Xstats.rowCount()
-                self.tab2_tableWidget_Xstats.insertRow(idx)
+    class ThreadUnivariateDescriptives(QtCore.QThread):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        # Define signals
+        data_signal = QtCore.Signal(list)
 
-                # Create table items and make sure not editable
-                name_item = QTableWidgetItem(key)
-                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+        def __init__(self, x, y, xlabel, ylabel):
+            QtCore.QThread.__init__(self)
+            self.x      = x
+            self.y      = y
+            self.xlabel = xlabel
+            self.ylabel = ylabel
 
-                key_item  = QTableWidgetItem('%.3f' % value)
-                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        def __del__(self):
+            """ADD DESCRIPTION"""
+            self.wait()
 
-                # Insert items into table
-                self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
-                self.tab2_tableWidget_Xstats.setItem(idx, 1, key_item)
+        def run(self):
+            """ADD DESCRIPTION"""
+            try:
+                # X variable
+                if self.xlabel != 'None':
+                    x_stats   = utils.univariate_statistics(self.x)
+                    x_freq    = pd.value_counts(self.x)
+                    x_numeric = utils.is_numeric(self.x)
+                    if x_numeric: x_freq = utils.value_counts_grouped(self.x, x_freq)
+                else:
+                    x_stats   = pd.DataFrame([])
+                    x_freq    = pd.DataFrame([])
+                    x_numeric = 0 
 
-            # Calculate frequencies and populate table
-            x_freq = pd.value_counts(x)
-            for i in xrange(x_freq.shape[0]):
+                # Y variable
+                if self.ylabel != 'None':
+                    y_stats   = utils.univariate_statistics(self.y)
+                    y_freq    = pd.value_counts(self.y)
+                    y_numeric = utils.is_numeric(self.y)
+                    if y_numeric: y_freq = utils.value_counts_grouped(self.y, y_freq)
+                else:
+                    y_stats   = pd.DataFrame([])
+                    y_freq    = pd.DataFrame([])
+                    y_numeric = 0 
 
-                # Insert row
-                idx = self.tab2_tableWidget_Xfreq.rowCount()
-                self.tab2_tableWidget_Xfreq.insertRow(idx)
+                # Success signal
+                self.data_signal.emit(['Success', x_stats, y_stats, x_freq, 
+                                         y_freq, x_numeric, y_numeric, self.xlabel, 
+                                         self.ylabel])
 
-                # Create table items and make sure not editable
-                name_item = QTableWidgetItem('%.3f' % x_freq.index[i])
-                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+            except Exception as e:
+                # Error signal
+                self.data_signal.emit([str(e), x_stats, y_stats, x_freq, 
+                                         y_freq,x_numeric, y_numeric, self.xlabel, 
+                                         self.ylabel])
 
-                key_item  = QTableWidgetItem('%d' % x_freq.values[1])
-                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-                # Insert items into table
-                self.tab2_tableWidget_Xfreq.setItem(idx, 0, name_item)
-                self.tab2_tableWidget_Xfreq.setItem(idx, 1, key_item)
+    def slot_ThreadUnivariateDescriptives(self, data_signal):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        # Unpack signal information
+        status    = data_signal[0]
+        x_stats   = data_signal[1]
+        y_stats   = data_signal[2]
+        x_freq    = data_signal[3]
+        y_freq    = data_signal[4]
+        x_numeric = data_signal[5]
+        y_numeric = data_signal[6]
+        xlabel    = data_signal[7]
+        ylabel    = data_signal[8]
 
-        # Y variable
-        if ylabel != 'None':
-            # Calculate descriptives and populate table
-            self.tab2_tableWidget_Ystats.setRowCount(0)
-            y_stats = utils.univariate_statistics(y)
-            for key, value in y_stats.iteritems():
+        # Clear tables
+        self.tab2_tableWidget_Xstats.setRowCount(0)
+        self.tab2_tableWidget_Xfreq.setRowCount(0)
+        self.tab2_tableWidget_Ystats.setRowCount(0)
+        self.tab2_tableWidget_Yfreq.setRowCount(0)
 
-                # Insert row
-                idx = self.tab2_tableWidget_Ystats.rowCount()
-                self.tab2_tableWidget_Ystats.insertRow(idx)
+        # Update GUI
+        if status != 'Success':
+            utils.message_box(message="Error Generating Univariate Statistics",
+                              informativeText="Reason:\n%s" % status,
+                              windowTitle="Calculation Error",
+                              type="error")
+        else:
+            # X variable
+            if xlabel != 'None':
+                # Calculate descriptives and populate table
+                for key, value in x_stats.iteritems():
 
-                # Create table items and make sure not editable
-                name_item = QTableWidgetItem(key)
-                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    # Insert row
+                    idx = self.tab2_tableWidget_Xstats.rowCount()
+                    self.tab2_tableWidget_Xstats.insertRow(idx)
 
-                key_item  = QTableWidgetItem('%.3f' % value)
-                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                    # Create table items and make sure not editable
+                    name_item = QTableWidgetItem(key)
+                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
-                # Insert items into table
-                self.tab2_tableWidget_Ystats.setItem(idx, 0, name_item)
-                self.tab2_tableWidget_Ystats.setItem(idx, 1, key_item)
+                    key_item  = QTableWidgetItem('%.3f' % value)
+                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-            # Calculate frequencies and populate table
-            y_freq = pd.value_counts(y)
-            for i in xrange(y_freq.shape[0]):
+                    # Insert items into table
+                    self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
+                    self.tab2_tableWidget_Xstats.setItem(idx, 1, key_item)
 
-                # Insert row
-                idx = self.tab2_tableWidget_Yfreq.rowCount()
-                self.tab2_tableWidget_Yfreq.insertRow(idx)
+                # Test if x is numeric, then create grouped frequency table
+                for i in xrange(x_freq.shape[0]):
 
-                # Create table items and make sure not editable
-                name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
-                name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    # Insert row
+                    idx = self.tab2_tableWidget_Xfreq.rowCount()
+                    self.tab2_tableWidget_Xfreq.insertRow(idx)
 
-                key_item  = QTableWidgetItem('%d' % y_freq.values[1])
-                key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                    # Create table items and make sure not editable
+                    if x_numeric:
+                        name_item = QTableWidgetItem(x_freq.index[i])
+                        key_item  = QTableWidgetItem('%d' % x_freq.values[i][0])
+                    else:
+                        name_item = QTableWidgetItem('%.3f' % x_freq.index[i])
+                        key_item  = QTableWidgetItem('%d' % x_freq.values[i])
 
-                # Insert items into table
-                self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
-                self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
+                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                    # Insert items into table
+                    self.tab2_tableWidget_Xfreq.setItem(idx, 0, name_item)
+                    self.tab2_tableWidget_Xfreq.setItem(idx, 1, key_item)
+
+            # Y variable
+            if ylabel != 'None':
+                # Calculate descriptives and populate table
+                for key, value in y_stats.iteritems():
+
+                    # Insert row
+                    idx = self.tab2_tableWidget_Ystats.rowCount()
+                    self.tab2_tableWidget_Ystats.insertRow(idx)
+
+                    # Create table items and make sure not editable
+                    name_item = QTableWidgetItem(key)
+                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                    key_item  = QTableWidgetItem('%.3f' % value)
+                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                    # Insert items into table
+                    self.tab2_tableWidget_Ystats.setItem(idx, 0, name_item)
+                    self.tab2_tableWidget_Ystats.setItem(idx, 1, key_item)
+
+                # Calculate frequencies and populate table
+                for i in xrange(y_freq.shape[0]):
+
+                    # Insert row
+                    idx = self.tab2_tableWidget_Yfreq.rowCount()
+                    self.tab2_tableWidget_Yfreq.insertRow(idx)
+
+                    # Create table items and make sure not editable
+                    if y_numeric:
+                        name_item = QTableWidgetItem(y_freq.index[i])
+                        key_item  = QTableWidgetItem('%d' % y_freq.values[i][0])
+
+                    else:
+                        name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
+                        key_item  = QTableWidgetItem('%d' % y_freq.values[i])
+
+                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+                    # Insert items into table
+                    self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
+                    self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
+
+
+    def univariate_descriptives(self, x, y, xlabel, ylabel):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        self.univariate_thread = \
+                self.ThreadUnivariateDescriptives(x=x, y=y, xlabel=xlabel, ylabel=ylabel)
+        self.univariate_thread.data_signal.connect(self.slot_ThreadUnivariateDescriptives)        
+        self.univariate_thread.start()
 
 
     #################################
     # TAB 3 BIVARIATE UI: FUNCTIONS #
     #################################
 
-    def tab3_comboBox_addModelNames(self):
+    def add_model_names(self):
         """ADD DESCRIPTION"""
         self.model_type = self.tab3_comboBox_ModelType.currentText()
         self.tab3_comboBox_ModelName.clear()
         self.tab3_comboBox_ModelName.addItems(utils.LINK_MODEL_API[self.model_type].keys())
 
 
-    def tab3_label_setLink(self):
+    def set_model_api_link(self):
         """ADD DESCRIPTION"""
         self.model_type = self.tab3_comboBox_ModelType.currentText()
         self.model_name = self.tab3_comboBox_ModelName.currentText()
@@ -620,7 +776,7 @@ class MainUi(QMainWindow):
             '''<a href='{}'>Link to Model API</a>'''.format(self.url)
             )
 
-    def tab3_plainTextEdit_setModelParams(self):
+    def set_model_parameters(self):
         """ADD DESCRIPTION"""
         self.clf = utils.get_model(model_name=self.model_name, model_type=self.model_type)
         text = utils.pretty_print_dict(self.clf.get_params())
