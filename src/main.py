@@ -23,18 +23,14 @@ import utils
 from visual import DynamicMplCanvas
 
 # TODO:
+# - CHECK DTYPES FOR PLOTTING
 # - Add tooltips (use Designer)
 # - Add error checking (consider making separate helper functions to check data configuration)
 # - Add status bar updates where necessary
 # - Add functionality for machine learning (use Threading)
 # - Add keyboard shortcuts
-# - Add threading for summary statistics (large samples may freeze main thread for a second or so)
-# - Add loading bars where appropriate
 # - Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
 # - Connect all menu item buttons
-# - Automatically generate two subplots when two variables are specified for boxplots
-# - Add other univariate statistics for tab 2 
-#   variance, skewness, kurtosis, coefficient of variation, CIs, IQR
 # - Try better printing for tab 2 univariate statistics
 # - Build freeze scripts for different operating systems
 # - Unit tests
@@ -124,8 +120,8 @@ class MainUi(QMainWindow):
             )
 
         # Add model parameters to plain text widget
-        self.clf = utils.get_model(model_name=self.model_name, model_type=self.model_type)
-        text     = utils.pretty_print_dict(self.clf.get_params())
+        model = utils.get_model(model_name=self.model_name, model_type=self.model_type)
+        text  = utils.pretty_print_dict(model.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
         # Connect combo box functions
@@ -156,6 +152,12 @@ class MainUi(QMainWindow):
 
         # Connect generate button
         self.pushButton_Generate.clicked.connect(self.generate_results)
+
+        # Connect combo boxes to check boxes
+        self.comboBox_XAxis.activated.connect(self.update_checkbox)
+        self.comboBox_YAxis.activated.connect(self.update_checkbox)
+        self.checkBox_StandardizeX.setEnabled(False)
+        self.checkBox_StandardizeY.setEnabled(False)
 
     # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
 
@@ -196,6 +198,28 @@ class MainUi(QMainWindow):
     ###########################
     # VISUALIZE UI: FUNCTIONS #
     ###########################
+
+    def update_checkbox(self):
+        """ADD DESCRIPTION"""
+        xlabel = self.comboBox_XAxis.currentText()
+        ylabel = self.comboBox_YAxis.currentText()
+
+        if xlabel == 'None':
+            self.checkBox_StandardizeX.setEnabled(False)
+        else:
+            if not utils.is_numeric(self.data[xlabel]):
+                self.checkBox_StandardizeX.setEnabled(False)
+            else:
+                self.checkBox_StandardizeX.setEnabled(True)
+
+        if ylabel == 'None': 
+            self.checkBox_StandardizeY.setEnabled(False)
+        else:
+            if not utils.is_numeric(self.data[ylabel]):
+                self.checkBox_StandardizeY.setEnabled(False)
+            else:
+                self.checkBox_StandardizeY.setEnabled(True)
+
 
     def generate_results(self):
         """ADD DESCRIPTION"""
@@ -365,6 +389,7 @@ class MainUi(QMainWindow):
             self.data[var_name] = new_var
             self.dtypes         = map(str, self.data.dtypes)
             self.update_lcd_numbers()
+            self.update_checkbox()
             self.statusBar.showMessage("Converted %s to data type %s" % (var_name, new_dtype))
 
         except Exception as e:
@@ -812,7 +837,7 @@ class MainUi(QMainWindow):
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
 
-    def check_parameters_for_ml(self, xlabel, ylabel, plot_type):
+    class ThreadFitModel(QtCore.QThread):
         """ADD
         
         Parameters
@@ -820,81 +845,51 @@ class MainUi(QMainWindow):
         
         Returns
         -------
-        """
-        # Both variables need to be specified
-        if xlabel == 'None' and ylabel == 'None':
-            utils.message_box(message="Error Fitting %s Model" % self.model_type,
-                              informativeText="Reason:\nX and Y variable not specified",
-                              windowTitle="Error Fitting Model",
-                              type="error")
-            return
+        """ 
+        # Define signals
+        data_signal  = QtCore.Signal(list)
 
-        # If add predictions to plot checked, check for valid plot
-        if self.tab3_checkBox_AddPredictions.isChecked():
-            if plot_type not in utils.PLOTS_FOR_PRED:
-                utils.message_box(message="Unable to Adding Predictions to %s Plot" % plot_type,
-                                  informativeText="Reason:\n%s plot is not a valid plot to add predictions" % plot_type,
-                                  windowTitle="Error Adding Predictions to Plot",
-                                  type="error")
-                return
+        def __init__(self, X, y, model_type, model, pushButton):
+            QtCore.QThread.__init__(self)
 
-            # If add predictions to plot checked, make sure plot is already generated
-            if False in self.plot_generated: # This is a list with 1 element
-                utils.message_box(message="Error Adding Predictions to %s Plot" % plot_type,
-                                  informativeText="Reason:\nNo plot generated yet",
-                                  windowTitle="Error Adding Predictions to Plot",
-                                  type="error")
-                return
+            # Define attributes
+            self.X          = X
+            self.y          = y
+            self.model_type = model_type
+            self.model      = model
+
+            # Change button to running status
+            pushButton.setText('Cancel') 
+            pushButton.setStyleSheet('background-color:red;') 
+            pushButton.setIcon(QIcon('../icons/run.png'))
 
 
-    # class ThreadFitModel(QtCore.QThread):
-    #     """ADD
-        
-    #     Parameters
-    #     ----------
-        
-    #     Returns
-    #     -------
-    #     """ 
-    #     # Define signals
-    #     data_signal  = QtCore.Signal(list)
-
-    #     def __init__(self, file, pushButton):
-    #         QtCore.QThread.__init__(self)
-    #         self.file = file
-
-    #         # Change button to running status
-    #         pushButton.setText('Running') 
-    #         pushButton.setStyleSheet('background-color:green;') 
-    #         pushButton.setIcon(QIcon('../icons/run.png'))
-    #         pushButton.setDisabled(True)
+        def __del__(self):
+            """ADD DESCRIPTION"""
+            self.wait()
 
 
-    #     def __del__(self):
-    #         """ADD DESCRIPTION"""
-    #         self.wait()
+        def run(self):
+            """ADD DESCRIPTION"""
+            try:
+                # Clustering model
+                if self.model_type == 'Clustering':
+                    X         = np.column_stack([self.X.reshape(-1, 1), self.y.reshape(-1, 1)])
+                    y_classes = self.model.fit_predict(X)
 
+                # Regression model
+                elif self.model_type == 'Regression':
+                    pass
+                
+                # Classification model
+                else:
+                    pass
 
-    #     def run(self):
-    #         """ADD DESCRIPTION"""
-    #         try:
-    #             # Get file extension and load data
-    #             _, file_extension = os.path.splitext(self.file)
-    #             if file_extension == '.csv': 
-    #                 data = pd.read_csv(self.file)
-    #             elif file_extension == '.tsv':
-    #                 data = pd.read_table(self.file)
-    #             elif file_extension == '.txt':
-    #                 data = pd.read_csv(self.file, delim_whitespace=True)
-    #             else:
-    #                 pass
+                # Emit all signals
+                self.data_signal.emit([ADD])
 
-    #             # Add sample ID variable to data and emit data signal
-    #             data.insert(0, 'Sample', np.arange(data.shape[0]).astype('int'))
-    #             self.data_signal.emit([data])
-
-    #         except Exception as e:
-    #             self.data_signal.emit([str(e)])
+            except Exception as e:
+                self.data_signal.emit([str(e)])
 
 
     def fit_model(self):
@@ -912,8 +907,30 @@ class MainUi(QMainWindow):
             ylabel    = self.comboBox_YAxis.currentText()
             plot_type = self.comboBox_PlotType.currentText()
 
-            # Check for valid input
-            self.check_parameters_for_ml(xlabel=xlabel, ylabel=ylabel, plot_type=plot_type)
+            # Both variables need to be specified
+            if xlabel == 'None' and ylabel == 'None':
+                utils.message_box(message="Error Fitting %s Model" % self.model_type,
+                                  informativeText="Reason:\nX and Y variable not specified",
+                                  windowTitle="Error Fitting Model",
+                                  type="error")
+                return
+
+            # If add predictions to plot checked, check for valid plot
+            if self.tab3_checkBox_AddPredictions.isChecked():
+                if plot_type not in utils.PLOTS_FOR_PRED:
+                    utils.message_box(message="Unable to Adding Predictions to %s Plot" % plot_type,
+                                      informativeText="Reason:\n%s plot is not a valid plot to add predictions" % plot_type,
+                                      windowTitle="Error Adding Predictions to Plot",
+                                      type="error")
+                    return
+
+                # If add predictions to plot checked, make sure plot is already generated
+                if False in self.plot_generated: # This is a list with 1 element
+                    utils.message_box(message="Error Adding Predictions to %s Plot" % plot_type,
+                                      informativeText="Reason:\nNo plot generated yet",
+                                      windowTitle="Error Adding Predictions to Plot",
+                                      type="error")
+                    return
 
             # Try and convert x and y to numeric for machine learning model
             try:
@@ -930,8 +947,24 @@ class MainUi(QMainWindow):
             # Try and convert hyperparameter text to dictionary and instantiate model
             try:
                 params = utils.text_to_dict(self.tab3_plainTextEdit_ModelParameters.toPlainText())
-                model  = utils.get_model(model_name=self.model_name, model_type=self.model_type,
-                                         params=params)
+                model  = utils.get_model(model_name=self.model_name, model_type=self.model_type)
+                
+                # Now try and update model with each parameter and skip ones that are invalid
+                n_failed, n_names = 0, []
+                for key, value in params.iteritems():
+                    try:
+                        model.set_params(**{key: value})
+                    except:
+                        n_failed += 1
+                        n_names.append({key: value})
+                        pass
+
+                if n_failed > 0:
+                    utils.message_box(message="Error Setting %d Model Parameters for %s Model" % self.model_name,
+                                      informativeText="Parameters:\n%s" % (n_names,),
+                                      windowTitle="Warning Setting Model Parameters",
+                                      type="warning")
+
             except Exception as e:
                 utils.message_box(message="Error Loading Parameters for %s Model" % self.model_name,
                                   informativeText="Reason:\n%s" % str(e),

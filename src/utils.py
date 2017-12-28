@@ -117,7 +117,7 @@ def load_ui(ui_file, base_instance=None):
     return widget
 
 
-def get_model(model_name, model_type, params={}):
+def get_model(model_name, model_type):
     """ADD
     
     Parameters
@@ -156,7 +156,7 @@ def get_model(model_name, model_type, params={}):
         }
     }
 
-    return models[model_type][model_name](**params)
+    return models[model_type][model_name]()
 
 
 def pretty_print_dict(model_params):
@@ -297,6 +297,19 @@ def value_counts_grouped(data, value_counts):
         values.append(counts[i])
 
     return pd.DataFrame(values, columns=['Count'], index=index)
+
+
+def cross_validation_predictions(X, y, model, model_type):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    if model_type == 'Regression':
+        pass
 
 
 def model_metrics(y_true, y_pred, model_type):
