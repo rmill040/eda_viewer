@@ -12,7 +12,7 @@ import os
 import pandas as pd
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
-                          QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
+                          QIcon, QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
 import qdarkstyle
 import sys
 from threading import Thread
@@ -54,8 +54,9 @@ class MainUi(QMainWindow):
         # Load .ui file dynamically for now
         utils.load_ui(utils.UI_PATH, self)
 
-        # Set window title, status bar, and force tab widget to open on data tab
+        # Set window title and icon, status bar, and force tab widget to open on data tab
         self.setWindowTitle('Exploratory Data Analysis Viewer')
+        self.setWindowIcon(QIcon('../icons/chart-line_black.png'))
         self.statusBar.showMessage("""Click "Load Data" button to begin""")
         self.tabWidget_Analysis.setCurrentIndex(0)
 
@@ -103,7 +104,8 @@ class MainUi(QMainWindow):
         # TAB 2 UNIVARIATE TAB UI #
         ###########################
 
-        # ADD HERE
+        # NO BUTTONS TO ADD
+
 
         #######################
         # TAB 3 BIVARIATE TAB #
@@ -134,15 +136,19 @@ class MainUi(QMainWindow):
         self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_api_link)
         self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_parameters)
 
+        # Connect fit model button
+        self.tab3_pushButton_FitModel.clicked.connect(self.fit_model)
+
 
         ################
         # VISUALIZE UI #
         ################
 
         # Add matplotlib widget
-        self.vbox         = QVBoxLayout()
-        self.MplCanvas    = DynamicMplCanvas()
-        self.navi_toolbar = NavigationToolbar(self.MplCanvas, self)
+        self.plot_generated = [False]
+        self.vbox           = QVBoxLayout()
+        self.MplCanvas      = DynamicMplCanvas()
+        self.navi_toolbar   = NavigationToolbar(self.MplCanvas, self)
         self.vbox.addWidget(self.MplCanvas)
         self.vbox.addWidget(self.navi_toolbar)
         self.vbox.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
@@ -152,6 +158,7 @@ class MainUi(QMainWindow):
         self.pushButton_Generate.clicked.connect(self.generate_results)
 
     # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
+
 
     ######################
     # MENU UI: FUNCTIONS #
@@ -226,23 +233,18 @@ class MainUi(QMainWindow):
                                           type="error")
                         return
 
-                # Make plot
+                # Make plot in separate thread (standard python threading)
                 kwargs = {
                     'sample': self.data['Sample'],
                     'x': self.data[xlabel] if xlabel != 'None' else None,
                     'y': self.data[ylabel] if ylabel != 'None' else None,
                     'xlabel': xlabel,
                     'ylabel': ylabel,
-                    'plot_type': plot_type
+                    'plot_type': plot_type,
+                    'plot_generated': self.plot_generated # Thread will set this flag to True when done
                     }
+                
                 Thread(target=self.MplCanvas.update_plot, kwargs=kwargs).start()
-
-                # self.MplCanvas.update_plot(sample=self.data['Sample'],
-                #                            x=self.data[xlabel] if xlabel != 'None' else None,
-                #                            y=self.data[ylabel] if ylabel != 'None' else None,
-                #                            xlabel=xlabel,
-                #                            ylabel=ylabel,
-                #                            plot_type=plot_type)
             
             # Catch plotting exception here
             except Exception as e:
@@ -258,7 +260,7 @@ class MainUi(QMainWindow):
                                              y=self.data[ylabel] if ylabel != 'None' else None,
                                              xlabel=xlabel,
                                              ylabel=ylabel)
-            
+
             # Catch descriptive statistics exception here
             except Exception as e:
                 utils.message_box(message="Error Calculating Univariate Statistics",
@@ -375,8 +377,7 @@ class MainUi(QMainWindow):
             comboBox = self.tab1_tableWidget_VariableInfo.cellWidget(row, 1).findChild(QComboBox)
             comboBox.setCurrentIndex(comboBox.findText(utils.DTYPE_TO_LABEL[self.dtypes[row]], 
                                                        QtCore.Qt.MatchFixedString))
-            return
-
+            return 
 
     def update_lcd_numbers(self):
         """ADD DESCRIPTION"""
@@ -416,13 +417,21 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal  = QtCore.Signal(list)
 
-        def __init__(self, file):
+        def __init__(self, file, pushButton):
             QtCore.QThread.__init__(self)
             self.file = file
+
+            # Change button to running status
+            pushButton.setText('Running') 
+            pushButton.setStyleSheet('background-color:green;') 
+            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setDisabled(True)
+
 
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
+
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -483,7 +492,13 @@ class MainUi(QMainWindow):
                               informativeText="Reason:\n%s" % signal,
                               windowTitle="I/O Error",
                               type="error")
-        
+
+        # Change back button
+        self.tab1_pushButton_LoadData.setText('Load Data') 
+        self.tab1_pushButton_LoadData.setStyleSheet('') 
+        self.tab1_pushButton_LoadData.setIcon(QIcon('../icons/play.png'))
+        self.tab1_pushButton_LoadData.setDisabled(False)
+
 
     def load_data(self):
         """ADD DESCRIPTION"""
@@ -500,7 +515,7 @@ class MainUi(QMainWindow):
         if file:
             self.data_loaded = False
             self.file        = file # Define as attribute for accessing in other functions
-            self.data_thread = self.ThreadLoadData(file)
+            self.data_thread = self.ThreadLoadData(file, self.tab1_pushButton_LoadData)
             self.data_thread.data_signal.connect(self.slot_ThreadLoadData)
             self.data_thread.start()
 
@@ -557,7 +572,6 @@ class MainUi(QMainWindow):
     # TAB 2 UNIVARIATE UI: FUNCTIONS #
     ##################################
 
-
     class ThreadUnivariateDescriptives(QtCore.QThread):
         """ADD
         
@@ -570,12 +584,19 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
-        def __init__(self, x, y, xlabel, ylabel):
+        def __init__(self, x, y, xlabel, ylabel, pushButton):
             QtCore.QThread.__init__(self)
             self.x      = x
             self.y      = y
             self.xlabel = xlabel
             self.ylabel = ylabel
+
+            # Change status of push button
+            pushButton.setText('Running') 
+            pushButton.setStyleSheet('background-color:green;') 
+            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setDisabled(True)
+
 
         def __del__(self):
             """ADD DESCRIPTION"""
@@ -614,8 +635,8 @@ class MainUi(QMainWindow):
             except Exception as e:
                 # Error signal
                 self.data_signal.emit([str(e), x_stats, y_stats, x_freq, 
-                                         y_freq,x_numeric, y_numeric, self.xlabel, 
-                                         self.ylabel])
+                                       y_freq,x_numeric, y_numeric, self.xlabel, 
+                                       self.ylabel])
 
 
     def slot_ThreadUnivariateDescriptives(self, data_signal):
@@ -650,6 +671,7 @@ class MainUi(QMainWindow):
                               informativeText="Reason:\n%s" % status,
                               windowTitle="Calculation Error",
                               type="error")
+            return
         else:
             # X variable
             if xlabel != 'None':
@@ -740,6 +762,12 @@ class MainUi(QMainWindow):
                     self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
                     self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
 
+        # Set back original push button
+        self.pushButton_Generate.setText('Generate') 
+        self.pushButton_Generate.setStyleSheet('') 
+        self.pushButton_Generate.setIcon(QIcon('../icons/play.png'))
+        self.pushButton_Generate.setDisabled(False)
+
 
     def univariate_descriptives(self, x, y, xlabel, ylabel):
         """ADD
@@ -751,7 +779,8 @@ class MainUi(QMainWindow):
         -------
         """
         self.univariate_thread = \
-                self.ThreadUnivariateDescriptives(x=x, y=y, xlabel=xlabel, ylabel=ylabel)
+                self.ThreadUnivariateDescriptives(x=x, y=y, xlabel=xlabel, ylabel=ylabel,
+                                                  pushButton=self.pushButton_Generate)
         self.univariate_thread.data_signal.connect(self.slot_ThreadUnivariateDescriptives)        
         self.univariate_thread.start()
 
@@ -783,9 +812,148 @@ class MainUi(QMainWindow):
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
 
+    def check_parameters_for_ml(self, xlabel, ylabel, plot_type):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        # Both variables need to be specified
+        if xlabel == 'None' and ylabel == 'None':
+            utils.message_box(message="Error Fitting %s Model" % self.model_type,
+                              informativeText="Reason:\nX and Y variable not specified",
+                              windowTitle="Error Fitting Model",
+                              type="error")
+            return
+
+        # If add predictions to plot checked, check for valid plot
+        if self.tab3_checkBox_AddPredictions.isChecked():
+            if plot_type not in utils.PLOTS_FOR_PRED:
+                utils.message_box(message="Unable to Adding Predictions to %s Plot" % plot_type,
+                                  informativeText="Reason:\n%s plot is not a valid plot to add predictions" % plot_type,
+                                  windowTitle="Error Adding Predictions to Plot",
+                                  type="error")
+                return
+
+            # If add predictions to plot checked, make sure plot is already generated
+            if False in self.plot_generated: # This is a list with 1 element
+                utils.message_box(message="Error Adding Predictions to %s Plot" % plot_type,
+                                  informativeText="Reason:\nNo plot generated yet",
+                                  windowTitle="Error Adding Predictions to Plot",
+                                  type="error")
+                return
+
+
+    # class ThreadFitModel(QtCore.QThread):
+    #     """ADD
+        
+    #     Parameters
+    #     ----------
+        
+    #     Returns
+    #     -------
+    #     """ 
+    #     # Define signals
+    #     data_signal  = QtCore.Signal(list)
+
+    #     def __init__(self, file, pushButton):
+    #         QtCore.QThread.__init__(self)
+    #         self.file = file
+
+    #         # Change button to running status
+    #         pushButton.setText('Running') 
+    #         pushButton.setStyleSheet('background-color:green;') 
+    #         pushButton.setIcon(QIcon('../icons/run.png'))
+    #         pushButton.setDisabled(True)
+
+
+    #     def __del__(self):
+    #         """ADD DESCRIPTION"""
+    #         self.wait()
+
+
+    #     def run(self):
+    #         """ADD DESCRIPTION"""
+    #         try:
+    #             # Get file extension and load data
+    #             _, file_extension = os.path.splitext(self.file)
+    #             if file_extension == '.csv': 
+    #                 data = pd.read_csv(self.file)
+    #             elif file_extension == '.tsv':
+    #                 data = pd.read_table(self.file)
+    #             elif file_extension == '.txt':
+    #                 data = pd.read_csv(self.file, delim_whitespace=True)
+    #             else:
+    #                 pass
+
+    #             # Add sample ID variable to data and emit data signal
+    #             data.insert(0, 'Sample', np.arange(data.shape[0]).astype('int'))
+    #             self.data_signal.emit([data])
+
+    #         except Exception as e:
+    #             self.data_signal.emit([str(e)])
+
+
+    def fit_model(self):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        if self.data_loaded:
+            # Grab labels and plot type
+            xlabel    = self.comboBox_XAxis.currentText()
+            ylabel    = self.comboBox_YAxis.currentText()
+            plot_type = self.comboBox_PlotType.currentText()
+
+            # Check for valid input
+            self.check_parameters_for_ml(xlabel=xlabel, ylabel=ylabel, plot_type=plot_type)
+
+            # Try and convert x and y to numeric for machine learning model
+            try:
+                x = self.data[xlabel].values.astype(float)
+                y = self.data[ylabel].values.astype(float)
+            
+            except Exception as e:
+                utils.message_box(message="Error Fitting %s Model" % self.model_type,
+                                  informativeText="Reason:\n%s" % str(e),
+                                  windowTitle="Error Fitting Model",
+                                  type="error")
+                return
+
+            # Try and convert hyperparameter text to dictionary and instantiate model
+            try:
+                params = utils.text_to_dict(self.tab3_plainTextEdit_ModelParameters.toPlainText())
+                model  = utils.get_model(model_name=self.model_name, model_type=self.model_type,
+                                         params=params)
+            except Exception as e:
+                utils.message_box(message="Error Loading Parameters for %s Model" % self.model_name,
+                                  informativeText="Reason:\n%s" % str(e),
+                                  windowTitle="Error Loading Parameters",
+                                  type="error")
+                return
+
+            # Fit model to data (in thread)
+            # ADD CODE HERE
+
+        else:
+            utils.message_box(message="Error Fitting %s Model" % self.model_type,
+                              informativeText="Reason:\nNot data loaded",
+                              windowTitle="Error Fitting Model",
+                              type="error")
+            return    
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon('../icons/app_icon.png'))
+    app.setApplicationName("Exploratory Data Analysis Viewer")
     if utils.USE_DARK_THEME: app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = MainUi()
     window.showMaximized()

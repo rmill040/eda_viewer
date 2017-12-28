@@ -34,12 +34,15 @@ WEBSITE        = "https://github.com/rmill040/eda_viewer"
 
 UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
 USE_DARK_THEME = True
+PLOTS_FOR_PRED = ['Scatter', 'Line', 'Scatter + Line']
+
 
 DTYPE_TO_LABEL = {'int64': 'integer', 
                   'float64': 'float',
                   'object': 'object',
                   'datetime64[ns]': 'datetime'}
 LABEL_TO_DTYPE = {value: key for key, value in DTYPE_TO_LABEL.iteritems()}
+
 LINK_MODEL_API = {
     'Classification': {
         'Random Forests': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html',
@@ -114,7 +117,7 @@ def load_ui(ui_file, base_instance=None):
     return widget
 
 
-def get_model(model_name, model_type):
+def get_model(model_name, model_type, params={}):
     """ADD
     
     Parameters
@@ -153,7 +156,7 @@ def get_model(model_name, model_type):
         }
     }
 
-    return models[model_type][model_name]()
+    return models[model_type][model_name](**params)
 
 
 def pretty_print_dict(model_params):
@@ -171,6 +174,18 @@ def pretty_print_dict(model_params):
     return json.dumps(model_params, indent=4)
 
 
+def text_to_dict(model_params):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    return json.loads(model_params)
+
+
 def message_box(message, informativeText, windowTitle, type, question=False):
     """ADD
     
@@ -180,6 +195,7 @@ def message_box(message, informativeText, windowTitle, type, question=False):
     Returns
     -------
     """
+    # TODO: ADD DETAILED TEXT WITH TRACEBACKS AND EXCEPTION CATCHING
     msg = QMessageBox()
     msg.setText(message)
     msg.setInformativeText(informativeText)
@@ -224,38 +240,16 @@ def univariate_statistics(data):
         results['P 0.5%']   = np.percentile(data, 0.5)
         results['P 2.5%']   = np.percentile(data, 2.5)
         results['P 25%']    = np.percentile(data, 25)
-        results['P 75%']     = np.percentile(data, 75)
+        results['P 75%']    = np.percentile(data, 75)
         results['P 97.5%']  = np.percentile(data, 97.5)
         results['P 99.5%']  = np.percentile(data, 99.5)
         results['IQR']      = results['P 75%'] - results['P 25%']
-
-        # # Format string
-        # results_str = '-'*28
-        # results_str += '\n{:<15}{:<15}\n'.format('Statistic', 'Value')
-        # results_str += '-'*28
-        # results_str += '\n'
-        # for key, value in results.iteritems():
-        #     results_str += '{:<15}{:<15.3f}'.format(key, value)
-        #     if key != 'IQR': results_str += '\n'
-        # results_str += '\n'
-        # results_str += '-'*28
 
     else:
         results['Unique']  = len(np.unique(data))
         results['Mode']    = ss.mode(data)[0]
         results['Minimum'] = np.min(data)
         results['Maximum'] = np.max(data)
-
-        # # Format string
-        # results_str = '-'*28
-        # results_str += '\n{:<15}{:<15}\n'.format('Statistic', 'Value')
-        # results_str += '-'*28
-        # results_str += '\n'
-        # for key, value in results.iteritems():
-        #     results_str += '{:<15}{:<15.3f}'.format(key, value)
-        #     if key != 'Maximum': results_str += '\n'
-        # results_str += '\n'
-        # results_str += '-'*28
 
     return results
 
@@ -294,22 +288,27 @@ def value_counts_grouped(data, value_counts):
 
         # Last interval is closed
         if i == (n_bins-2):
-            index.append(
-                '[{:.3f}, {:.3f}]'.format(bins[i], bins[i+1])
-                )
+            index.append('[{:.3f}, {:.3f}]'.format(bins[i], bins[i+1]))
         
         # Other intervals are half-open (open to left, closed to right)
         else:
-            index.append(
-                '[{:.3f}, {:.3f})'.format(bins[i], bins[i+1])
-                )
+            index.append('[{:.3f}, {:.3f})'.format(bins[i], bins[i+1]))
         
         values.append(counts[i])
 
     return pd.DataFrame(values, columns=['Count'], index=index)
 
 
-
+def model_metrics(y_true, y_pred, model_type):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    pass
 
 
 if __name__ == "__main__":

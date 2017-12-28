@@ -68,7 +68,7 @@ class DynamicMplCanvas(MplCanvas):
             pass
 
 
-    def update_plot(self, sample, x, y, xlabel, ylabel, plot_type):
+    def update_plot(self, sample, x, y, xlabel, ylabel, plot_type, plot_generated):
         """ADD
         
         Parameters
@@ -178,9 +178,10 @@ class DynamicMplCanvas(MplCanvas):
                 self.axes_y.boxplot(y)
                 self.axes_y.set_title("Boxplot: {}".format(ylabel))
 
-        # Better layout and then draw
+        # Create better layout then draw
         plt.tight_layout()
         self.draw()
+        plot_generated[0] = True # This lets main UI know the plot generated
 
 
     def add_predictions_to_plot(self):
