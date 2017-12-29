@@ -186,7 +186,7 @@ def text_to_dict(model_params):
     return json.loads(model_params)
 
 
-def message_box(message, informativeText, windowTitle, type, question=False):
+def message_box(message, informativeText, type, question=False):
     """ADD
     
     Parameters
@@ -199,7 +199,6 @@ def message_box(message, informativeText, windowTitle, type, question=False):
     msg = QMessageBox()
     msg.setText(message)
     msg.setInformativeText(informativeText)
-    msg.setWindowTitle(windowTitle)
 
     if type == "warning":
         msg.setIcon(QMessageBox.Warning)

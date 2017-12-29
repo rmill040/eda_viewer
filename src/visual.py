@@ -8,15 +8,8 @@ matplotlib.rcParams['backend.qt4'] = 'PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
-from PySide import QtCore
-from PySide.QtGui import QApplication, QSizePolicy, QVBoxLayout, QWidget
-
-# Custom functions
-from utils import message_box
-
 # Set plotting style
 plt.style.use('seaborn-darkgrid')
-
 
 class MplCanvas(FigureCanvas):
     """Base MPL widget for plotting
@@ -32,8 +25,6 @@ class MplCanvas(FigureCanvas):
         self.axes = self.fig.add_subplot(111)
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
 
 
 class DynamicMplCanvas(MplCanvas):
@@ -44,11 +35,16 @@ class DynamicMplCanvas(MplCanvas):
 
 
     def compute_initial_figure(self):
-        """ADD DESCRIPTION"""
-        self.axes.scatter([0, 1, 2, 3], [1, 1, 1, 1])
-        self.axes.set_xlabel("None")
-        self.axes.set_ylabel("None")
-        self.axes.set_title("Scatter Plot: None x None")
+        """Initial demo plot for matplotlib canvas"""
+        self.axes.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 
+                       [70, 90, 100, 110, 130, 150, 160, 170, 180, 190, 215, 0, 0], '-o',
+                       color='green')
+        self.axes.set_xlabel("Number of Espresso Shots")
+        self.axes.set_ylabel("Heart Rate")
+        self.axes.annotate('No more heart rate', xy=(11, 0), xytext=(8, 20), 
+                          arrowprops=dict(facecolor='black', shrink=0.05))
+        self.axes.set_ylim([-2, 220])
+        self.axes.set_title("Demo Plot: Number of Espresso Shots x Heart Rate")
         plt.tight_layout()
 
 
@@ -185,7 +181,7 @@ class DynamicMplCanvas(MplCanvas):
             return 'Success'
 
         except Exception as e:
-            plot_generated[0] = False
+            plot_generated[0] = False # Sorry about your luck :(
             return str(e)
 
 

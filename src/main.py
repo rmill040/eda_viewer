@@ -100,7 +100,9 @@ class MainUi(QMainWindow):
         # TAB 2 UNIVARIATE TAB UI #
         ###########################
 
-        # NO BUTTONS TO ADD
+        # Update labels to reflect currently selected variable
+        self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
+        self.tab2_label_YVariable.setText('Y-Variable: %s' % self.comboBox_YAxis.currentText())
 
 
         #######################
@@ -233,6 +235,7 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
+
         def __init__(self, pushButton, func, kwargs):
             QtCore.QThread.__init__(self)
             self.func   = func
@@ -269,9 +272,8 @@ class MainUi(QMainWindow):
         status = data_signal[0]
         if status != 'Success':
             utils.message_box(message="Error Generating Plot",
-                  informativeText="Reason:\n%s" % status,
-                  windowTitle="Error Generating Plot",
-                  type="error")   
+                              informativeText="Reason:\n%s" % status,
+                              type="error")   
 
 
     def update_plot(self, pushButton, func, kwargs):
@@ -302,7 +304,6 @@ class MainUi(QMainWindow):
             if xlabel == 'None' and ylabel == 'None':
                 utils.message_box(message="No Variables Selected for Analysis",
                                   informativeText="Select X and/or Y variable and try again",
-                                  windowTitle="No Variables Selected",
                                   type="error")
                 return
 
@@ -313,7 +314,6 @@ class MainUi(QMainWindow):
                 if xlabel == 'None':
                     utils.message_box(message="Error Generating %s Plot" % plot_type,
                                       informativeText="Reason:\nNo X variable selected",
-                                      windowTitle="Error Generating Plot",
                                       type="error")
                     return
                 
@@ -321,15 +321,23 @@ class MainUi(QMainWindow):
                 if ylabel == 'None':
                     utils.message_box(message="Error Generating %s Plot" % plot_type,
                                       informativeText="Reason:\nNo Y variable selected",
-                                      windowTitle="Error Generating Plot",
                                       type="error")
                     return
+
+            # Select x and y variables and standardize if specified
+            x = self.data[xlabel] if xlabel != 'None' else None
+            if self.checkBox_StandardizeX.isEnabled() and self.checkBox_StandardizeX.isChecked():
+                x = (x - x.mean())/x.std()
+
+            y = self.data[ylabel] if ylabel != 'None' else None
+            if self.checkBox_StandardizeY.isEnabled() and self.checkBox_StandardizeY.isChecked():
+                y = (y - y.mean())/y.std()
 
             # Update plot (in separate thread)
             kwargs = {
                 'sample': self.data['Sample'],
-                'x': self.data[xlabel] if xlabel != 'None' else None,
-                'y': self.data[ylabel] if ylabel != 'None' else None,
+                'x': x,
+                'y': y,
                 'xlabel': xlabel,
                 'ylabel': ylabel,
                 'plot_type': plot_type,
@@ -340,8 +348,8 @@ class MainUi(QMainWindow):
 
 
             # Calculate descriptive statistics (in separate thread)
-            self.univariate_descriptives(x=self.data[xlabel] if xlabel != 'None' else None,
-                                         y=self.data[ylabel] if ylabel != 'None' else None,
+            self.univariate_descriptives(x=x,
+                                         y=y,
                                          xlabel=xlabel,
                                          ylabel=ylabel)
 
@@ -349,7 +357,6 @@ class MainUi(QMainWindow):
         else:
             utils.message_box(message="Error Generating Results",
                               informativeText="Reason:\nNo data loaded",
-                              windowTitle="Error Generating Results",
                               type="error")         
             return
 
@@ -386,7 +393,6 @@ class MainUi(QMainWindow):
                         self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
                         utils.message_box(message="Error Changing Variable Name: %s" % self.var_names[row],
                                           informativeText="Reason:\n%s name already exists" % new_var_name,
-                                          windowTitle="Invalid Variable Name",
                                           type="error")
                     else:
                         self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
@@ -401,7 +407,6 @@ class MainUi(QMainWindow):
                     self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
                     utils.message_box(message="Error Changing Variable Name: %s" % self.var_names[row],
                                       informativeText="Reason:\nBlank name specified",
-                                      windowTitle="Invalid Variable Name",
                                       type="error")
 
                 else:
@@ -447,7 +452,6 @@ class MainUi(QMainWindow):
         except Exception as e:
             utils.message_box(message="Error Changing Data Type Data Type %s to %s" % (var_name, new_dtype),
                               informativeText="Reason:\n%s" % str(e),
-                              windowTitle="Data Conversion Error",
                               type="error")
 
             # Set combo box back to data type before attempted conversion
@@ -567,7 +571,6 @@ class MainUi(QMainWindow):
         else:
             utils.message_box(message="Error Loading Data File %s" % self.file,
                               informativeText="Reason:\n%s" % signal,
-                              windowTitle="I/O Error",
                               type="error")
 
         # Change back button
@@ -661,7 +664,7 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
-        def __init__(self, x, y, xlabel, ylabel, pushButton):
+        def __init__(self, x, y, xlabel, ylabel):
             QtCore.QThread.__init__(self)
             self.x      = x
             self.y      = y
@@ -682,9 +685,9 @@ class MainUi(QMainWindow):
                     x_numeric = utils.is_numeric(self.x)
                     if x_numeric: x_freq = utils.value_counts_grouped(self.x, x_freq)
                 else:
-                    x_stats   = pd.DataFrame([])
-                    x_freq    = pd.DataFrame([])
-                    x_numeric = 0 
+                    x_stats   = None
+                    x_freq    = None
+                    x_numeric = None
 
                 # Y variable
                 if self.ylabel != 'None':
@@ -693,20 +696,18 @@ class MainUi(QMainWindow):
                     y_numeric = utils.is_numeric(self.y)
                     if y_numeric: y_freq = utils.value_counts_grouped(self.y, y_freq)
                 else:
-                    y_stats   = pd.DataFrame([])
-                    y_freq    = pd.DataFrame([])
-                    y_numeric = 0 
+                    y_stats   = None
+                    y_freq    = None
+                    y_numeric = None
 
                 # Success signal
                 self.data_signal.emit(['Success', x_stats, y_stats, x_freq, 
-                                         y_freq, x_numeric, y_numeric, self.xlabel, 
-                                         self.ylabel])
+                                        y_freq, x_numeric, y_numeric, self.xlabel, 
+                                        self.ylabel])
 
             except Exception as e:
                 # Error signal
-                self.data_signal.emit([str(e), x_stats, y_stats, x_freq, 
-                                       y_freq,x_numeric, y_numeric, self.xlabel, 
-                                       self.ylabel])
+                self.data_signal.emit([str(e)])
 
 
     def slot_ThreadUnivariateDescriptives(self, data_signal):
@@ -718,36 +719,39 @@ class MainUi(QMainWindow):
         Returns
         -------
         """
-        # Unpack signal information
-        status    = data_signal[0]
-        x_stats   = data_signal[1]
-        y_stats   = data_signal[2]
-        x_freq    = data_signal[3]
-        y_freq    = data_signal[4]
-        x_numeric = data_signal[5]
-        y_numeric = data_signal[6]
-        xlabel    = data_signal[7]
-        ylabel    = data_signal[8]
-
-        # Clear tables
-        self.tab2_tableWidget_Xstats.setRowCount(0)
-        self.tab2_tableWidget_Xfreq.setRowCount(0)
-        self.tab2_tableWidget_Ystats.setRowCount(0)
-        self.tab2_tableWidget_Yfreq.setRowCount(0)
+        status = data_signal[0]
 
         # Update GUI
         if status != 'Success':
             utils.message_box(message="Error Generating Univariate Statistics",
                               informativeText="Reason:\n%s" % status,
-                              windowTitle="Calculation Error",
                               type="error")
-            return
+
         else:
+            # Unpack remainder of signal information
+            x_stats   = data_signal[1]
+            y_stats   = data_signal[2]
+            x_freq    = data_signal[3]
+            y_freq    = data_signal[4]
+            x_numeric = data_signal[5]
+            y_numeric = data_signal[6]
+            xlabel    = data_signal[7]
+            ylabel    = data_signal[8]
+
+            # Clear tables
+            self.tab2_tableWidget_Xstats.setRowCount(0)
+            self.tab2_tableWidget_Xfreq.setRowCount(0)
+            self.tab2_tableWidget_Ystats.setRowCount(0)
+            self.tab2_tableWidget_Yfreq.setRowCount(0)
+
+            # Update labels to reflect current variables selected
+            self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
+            self.tab2_label_YVariable.setText('Y-Variable: %s' % self.comboBox_YAxis.currentText())
+            
             # X variable
             if xlabel != 'None':
                 # Calculate descriptives and populate table
                 for key, value in x_stats.iteritems():
-
                     try:
                         # Insert row
                         idx = self.tab2_tableWidget_Xstats.rowCount()
@@ -769,7 +773,6 @@ class MainUi(QMainWindow):
 
                 # Test if x is numeric, then create grouped frequency table
                 for i in xrange(x_freq.shape[0]):
-
                     try:
                         # Insert row
                         idx = self.tab2_tableWidget_Xfreq.rowCount()
@@ -797,7 +800,6 @@ class MainUi(QMainWindow):
             if ylabel != 'None':
                 # Calculate descriptives and populate table
                 for key, value in y_stats.iteritems():
-
                     try:
                         # Insert row
                         idx = self.tab2_tableWidget_Ystats.rowCount()
@@ -819,19 +821,16 @@ class MainUi(QMainWindow):
 
                 # Calculate frequencies and populate table
                 for i in xrange(y_freq.shape[0]):
-
                     try:
                         # Insert row
                         idx = self.tab2_tableWidget_Yfreq.rowCount()
                         self.tab2_tableWidget_Yfreq.insertRow(idx)
 
                         # Create table items and make sure not editable
+                        name_item = QTableWidgetItem(str(y_freq.index[i]))
                         if y_numeric:
-                            name_item = QTableWidgetItem(y_freq.index[i])
                             key_item  = QTableWidgetItem('%d' % y_freq.values[i][0])
-
                         else:
-                            name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
                             key_item  = QTableWidgetItem('%d' % y_freq.values[i])
 
                         name_item.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -861,8 +860,7 @@ class MainUi(QMainWindow):
         -------
         """
         self.univariate_thread = \
-                self.ThreadUnivariateDescriptives(x=x, y=y, xlabel=xlabel, ylabel=ylabel,
-                                                  pushButton=self.pushButton_Generate)
+                self.ThreadUnivariateDescriptives(x=x, y=y, xlabel=xlabel, ylabel=ylabel)
         self.univariate_thread.data_signal.connect(self.slot_ThreadUnivariateDescriptives)        
         self.univariate_thread.start()
 
@@ -916,9 +914,10 @@ class MainUi(QMainWindow):
             self.model      = model
 
             # Change button to running status
-            pushButton.setText('Cancel') 
-            pushButton.setStyleSheet('background-color:red;') 
+            pushButton.setText('Running') 
+            pushButton.setStyleSheet('background-color:green;') 
             pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setDisabled(True)
 
 
         def __del__(self):
@@ -968,7 +967,6 @@ class MainUi(QMainWindow):
             if xlabel == 'None' and ylabel == 'None':
                 utils.message_box(message="Error Fitting %s Model" % self.model_type,
                                   informativeText="Reason:\nX and Y variable not specified",
-                                  windowTitle="Error Fitting Model",
                                   type="error")
                 return
 
@@ -977,7 +975,6 @@ class MainUi(QMainWindow):
                 if plot_type not in utils.PLOTS_FOR_PRED:
                     utils.message_box(message="Unable to Adding Predictions to %s Plot" % plot_type,
                                       informativeText="Reason:\n%s plot is not a valid plot to add predictions" % plot_type,
-                                      windowTitle="Error Adding Predictions to Plot",
                                       type="error")
                     return
 
@@ -985,7 +982,6 @@ class MainUi(QMainWindow):
                 if False in self.plot_generated: # This is a list with 1 element
                     utils.message_box(message="Error Adding Predictions to %s Plot" % plot_type,
                                       informativeText="Reason:\nNo plot generated yet",
-                                      windowTitle="Error Adding Predictions to Plot",
                                       type="error")
                     return
 
@@ -997,7 +993,6 @@ class MainUi(QMainWindow):
             except Exception as e:
                 utils.message_box(message="Error Fitting %s Model" % self.model_type,
                                   informativeText="Reason:\n%s" % str(e),
-                                  windowTitle="Error Fitting Model",
                                   type="error")
                 return
 
@@ -1019,13 +1014,11 @@ class MainUi(QMainWindow):
                 if n_failed > 0:
                     utils.message_box(message="Error Setting %d Model Parameters for %s Model" % self.model_name,
                                       informativeText="Parameters:\n%s" % (n_names,),
-                                      windowTitle="Warning Setting Model Parameters",
                                       type="warning")
 
             except Exception as e:
                 utils.message_box(message="Error Loading Parameters for %s Model" % self.model_name,
                                   informativeText="Reason:\n%s" % str(e),
-                                  windowTitle="Error Loading Parameters",
                                   type="error")
                 return
 
@@ -1035,7 +1028,6 @@ class MainUi(QMainWindow):
         else:
             utils.message_box(message="Error Fitting %s Model" % self.model_type,
                               informativeText="Reason:\nNot data loaded",
-                              windowTitle="Error Fitting Model",
                               type="error")
             return    
 
