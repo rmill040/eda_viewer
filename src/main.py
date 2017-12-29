@@ -221,6 +221,75 @@ class MainUi(QMainWindow):
                 self.checkBox_StandardizeY.setEnabled(True)
 
 
+    class ThreadUpdatePlot(QtCore.QThread):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """ 
+        # Define signals
+        data_signal = QtCore.Signal(list)
+
+        def __init__(self, pushButton, func, kwargs):
+            QtCore.QThread.__init__(self)
+            self.func   = func
+            self.kwargs = kwargs
+
+            # Change status of push button
+            pushButton.setText('Running') 
+            pushButton.setStyleSheet('background-color:green;') 
+            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setDisabled(True)
+
+
+        def __del__(self):
+            """ADD DESCRIPTION"""
+            self.wait()
+
+
+        def run(self):
+            """ADD DESCRIPTION"""
+            status = self.func(**self.kwargs)
+            self.data_signal.emit([status])
+
+
+    def slot_ThreadUpdatePlot(self, data_signal):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        # Unpack signal and check status
+        status = data_signal[0]
+        if status != 'Success':
+            utils.message_box(message="Error Generating Plot",
+                  informativeText="Reason:\n%s" % status,
+                  windowTitle="Error Generating Plot",
+                  type="error")   
+
+
+    def update_plot(self, pushButton, func, kwargs):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        self.update_plot_thread = \
+                self.ThreadUpdatePlot(pushButton=pushButton, func=func, kwargs=kwargs)
+        self.update_plot_thread.data_signal.connect(self.slot_ThreadUpdatePlot)        
+        self.update_plot_thread.start()
+
+
+
     def generate_results(self):
         """ADD DESCRIPTION"""
         if self.data_loaded:
@@ -229,6 +298,7 @@ class MainUi(QMainWindow):
             ylabel    = self.comboBox_YAxis.currentText()
             plot_type = self.comboBox_PlotType.currentText()
 
+            # No labels specified
             if xlabel == 'None' and ylabel == 'None':
                 utils.message_box(message="No Variables Selected for Analysis",
                                   informativeText="Select X and/or Y variable and try again",
@@ -236,62 +306,44 @@ class MainUi(QMainWindow):
                                   type="error")
                 return
 
-            # Create plot
-            try:
-                # Check for valid data based on plot type
-                if plot_type in ['Scatter', 'Line', 'Scatter + Line']: 
-                    
-                    # Need X variable
-                    if xlabel == 'None':
-                        utils.message_box(message="Error Generating %s Plot" % plot_type,
-                                          informativeText="Reason:\nNo X variable selected",
-                                          windowTitle="Error Generating Plot",
-                                          type="error")
-                        return
-                    
-                    # Also need Y variable
-                    if ylabel == 'None':
-                        utils.message_box(message="Error Generating %s Plot" % plot_type,
-                                          informativeText="Reason:\nNo Y variable selected",
-                                          windowTitle="Error Generating Plot",
-                                          type="error")
-                        return
-
-                # Make plot in separate thread (standard python threading)
-                kwargs = {
-                    'sample': self.data['Sample'],
-                    'x': self.data[xlabel] if xlabel != 'None' else None,
-                    'y': self.data[ylabel] if ylabel != 'None' else None,
-                    'xlabel': xlabel,
-                    'ylabel': ylabel,
-                    'plot_type': plot_type,
-                    'plot_generated': self.plot_generated # Thread will set this flag to True when done
-                    }
+            # Check for valid data based on plot type
+            if plot_type in ['Scatter', 'Line', 'Scatter + Line']: 
                 
-                Thread(target=self.MplCanvas.update_plot, kwargs=kwargs).start()
-            
-            # Catch plotting exception here
-            except Exception as e:
-                utils.message_box(message="Error Generating %s Plot" % plot_type,
-                                  informativeText="Reason:\n%s" % str(e),
-                                  windowTitle="Error Generating Plot",
-                                  type="error")
-                return
+                # Need X variable
+                if xlabel == 'None':
+                    utils.message_box(message="Error Generating %s Plot" % plot_type,
+                                      informativeText="Reason:\nNo X variable selected",
+                                      windowTitle="Error Generating Plot",
+                                      type="error")
+                    return
+                
+                # Also need Y variable
+                if ylabel == 'None':
+                    utils.message_box(message="Error Generating %s Plot" % plot_type,
+                                      informativeText="Reason:\nNo Y variable selected",
+                                      windowTitle="Error Generating Plot",
+                                      type="error")
+                    return
 
-            # Calculate descriptive statistics
-            try:
-                self.univariate_descriptives(x=self.data[xlabel] if xlabel != 'None' else None,
-                                             y=self.data[ylabel] if ylabel != 'None' else None,
-                                             xlabel=xlabel,
-                                             ylabel=ylabel)
+            # Update plot (in separate thread)
+            kwargs = {
+                'sample': self.data['Sample'],
+                'x': self.data[xlabel] if xlabel != 'None' else None,
+                'y': self.data[ylabel] if ylabel != 'None' else None,
+                'xlabel': xlabel,
+                'ylabel': ylabel,
+                'plot_type': plot_type,
+                'plot_generated': self.plot_generated # Thread will set this flag to True when done
+                }
+            self.update_plot(pushButton=self.pushButton_Generate, func=self.MplCanvas.update_plot, 
+                             kwargs=kwargs)
 
-            # Catch descriptive statistics exception here
-            except Exception as e:
-                utils.message_box(message="Error Calculating Univariate Statistics",
-                                  informativeText="Reason:\n%s" % str(e),
-                                  windowTitle="Error Calculating Statistics",
-                                  type="error")
-                return
+
+            # Calculate descriptive statistics (in separate thread)
+            self.univariate_descriptives(x=self.data[xlabel] if xlabel != 'None' else None,
+                                         y=self.data[ylabel] if ylabel != 'None' else None,
+                                         xlabel=xlabel,
+                                         ylabel=ylabel)
 
         # Data not loaded yet
         else:
@@ -299,7 +351,7 @@ class MainUi(QMainWindow):
                               informativeText="Reason:\nNo data loaded",
                               windowTitle="Error Generating Results",
                               type="error")         
-
+            return
 
     ############################
     # TAB 1 DATA UI: FUNCTIONS #
@@ -440,7 +492,7 @@ class MainUi(QMainWindow):
         -------
         """ 
         # Define signals
-        data_signal  = QtCore.Signal(list)
+        data_signal = QtCore.Signal(list)
 
         def __init__(self, file, pushButton):
             QtCore.QThread.__init__(self)
@@ -616,13 +668,6 @@ class MainUi(QMainWindow):
             self.xlabel = xlabel
             self.ylabel = ylabel
 
-            # Change status of push button
-            pushButton.setText('Running') 
-            pushButton.setStyleSheet('background-color:green;') 
-            pushButton.setIcon(QIcon('../icons/run.png'))
-            pushButton.setDisabled(True)
-
-
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
@@ -703,89 +748,101 @@ class MainUi(QMainWindow):
                 # Calculate descriptives and populate table
                 for key, value in x_stats.iteritems():
 
-                    # Insert row
-                    idx = self.tab2_tableWidget_Xstats.rowCount()
-                    self.tab2_tableWidget_Xstats.insertRow(idx)
+                    try:
+                        # Insert row
+                        idx = self.tab2_tableWidget_Xstats.rowCount()
+                        self.tab2_tableWidget_Xstats.insertRow(idx)
 
-                    # Create table items and make sure not editable
-                    name_item = QTableWidgetItem(key)
-                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        # Create table items and make sure not editable
+                        name_item = QTableWidgetItem(key)
+                        name_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
-                    key_item  = QTableWidgetItem('%.3f' % value)
-                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                        key_item  = QTableWidgetItem('%.3f' % value)
+                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-                    # Insert items into table
-                    self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
-                    self.tab2_tableWidget_Xstats.setItem(idx, 1, key_item)
+                        # Insert items into table
+                        self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
+                        self.tab2_tableWidget_Xstats.setItem(idx, 1, key_item)
+                    except:
+                        continue
 
                 # Test if x is numeric, then create grouped frequency table
                 for i in xrange(x_freq.shape[0]):
 
-                    # Insert row
-                    idx = self.tab2_tableWidget_Xfreq.rowCount()
-                    self.tab2_tableWidget_Xfreq.insertRow(idx)
+                    try:
+                        # Insert row
+                        idx = self.tab2_tableWidget_Xfreq.rowCount()
+                        self.tab2_tableWidget_Xfreq.insertRow(idx)
 
-                    # Create table items and make sure not editable
-                    if x_numeric:
-                        name_item = QTableWidgetItem(x_freq.index[i])
-                        key_item  = QTableWidgetItem('%d' % x_freq.values[i][0])
-                    else:
-                        name_item = QTableWidgetItem('%.3f' % x_freq.index[i])
-                        key_item  = QTableWidgetItem('%d' % x_freq.values[i])
+                        # Create table items and make sure not editable
+                        if x_numeric:
+                            name_item = QTableWidgetItem(x_freq.index[i])
+                            key_item  = QTableWidgetItem('%d' % x_freq.values[i][0])
+                        else:
+                            name_item = QTableWidgetItem('%.3f' % x_freq.index[i])
+                            key_item  = QTableWidgetItem('%d' % x_freq.values[i])
 
-                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                        name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-                    # Insert items into table
-                    self.tab2_tableWidget_Xfreq.setItem(idx, 0, name_item)
-                    self.tab2_tableWidget_Xfreq.setItem(idx, 1, key_item)
+                        # Insert items into table
+                        self.tab2_tableWidget_Xfreq.setItem(idx, 0, name_item)
+                        self.tab2_tableWidget_Xfreq.setItem(idx, 1, key_item)
+                    except:
+                        continue
 
             # Y variable
             if ylabel != 'None':
                 # Calculate descriptives and populate table
                 for key, value in y_stats.iteritems():
 
-                    # Insert row
-                    idx = self.tab2_tableWidget_Ystats.rowCount()
-                    self.tab2_tableWidget_Ystats.insertRow(idx)
+                    try:
+                        # Insert row
+                        idx = self.tab2_tableWidget_Ystats.rowCount()
+                        self.tab2_tableWidget_Ystats.insertRow(idx)
 
-                    # Create table items and make sure not editable
-                    name_item = QTableWidgetItem(key)
-                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        # Create table items and make sure not editable
+                        name_item = QTableWidgetItem(key)
+                        name_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
-                    key_item  = QTableWidgetItem('%.3f' % value)
-                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                        key_item  = QTableWidgetItem('%.3f' % value)
+                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-                    # Insert items into table
-                    self.tab2_tableWidget_Ystats.setItem(idx, 0, name_item)
-                    self.tab2_tableWidget_Ystats.setItem(idx, 1, key_item)
+                        # Insert items into table
+                        self.tab2_tableWidget_Ystats.setItem(idx, 0, name_item)
+                        self.tab2_tableWidget_Ystats.setItem(idx, 1, key_item)
+                    except:
+                        continue
 
                 # Calculate frequencies and populate table
                 for i in xrange(y_freq.shape[0]):
 
-                    # Insert row
-                    idx = self.tab2_tableWidget_Yfreq.rowCount()
-                    self.tab2_tableWidget_Yfreq.insertRow(idx)
+                    try:
+                        # Insert row
+                        idx = self.tab2_tableWidget_Yfreq.rowCount()
+                        self.tab2_tableWidget_Yfreq.insertRow(idx)
 
-                    # Create table items and make sure not editable
-                    if y_numeric:
-                        name_item = QTableWidgetItem(y_freq.index[i])
-                        key_item  = QTableWidgetItem('%d' % y_freq.values[i][0])
+                        # Create table items and make sure not editable
+                        if y_numeric:
+                            name_item = QTableWidgetItem(y_freq.index[i])
+                            key_item  = QTableWidgetItem('%d' % y_freq.values[i][0])
 
-                    else:
-                        name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
-                        key_item  = QTableWidgetItem('%d' % y_freq.values[i])
+                        else:
+                            name_item = QTableWidgetItem('%.3f' % y_freq.index[i])
+                            key_item  = QTableWidgetItem('%d' % y_freq.values[i])
 
-                    name_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                    key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                        name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-                    # Insert items into table
-                    self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
-                    self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
+                        # Insert items into table
+                        self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
+                        self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
+                    except:
+                        continue
 
         # Set back original push button
         self.pushButton_Generate.setText('Generate') 
