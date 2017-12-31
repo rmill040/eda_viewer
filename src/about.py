@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-from PySide import QtCore
-from PySide.QtGui import (QApplication, QDialog, QGridLayout, QIcon, QLabel, QPushButton, 
-                         QSizePolicy, QSpacerItem)
-import qdarkstyle
-import sys
 
-# Custom functions
-import utils
+# Import libraries from api
+from about_api import *
 
 
 class AboutUi(object):

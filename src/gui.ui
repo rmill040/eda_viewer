@@ -292,7 +292,7 @@
           <enum>QTabWidget::North</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -931,7 +931,7 @@
                  <bool>true</bool>
                 </property>
                 <property name="plainText">
-                 <string>Model Summary Will Display Here...</string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -952,6 +952,28 @@
               <set>Qt::AlignCenter</set>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="2">
+               <widget class="QPushButton" name="tab3_pushButton_FitModel">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>Fit Model</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="2">
                <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelParameters">
                 <property name="sizePolicy">
@@ -973,28 +995,6 @@
                 </property>
                 <property name="placeholderText">
                  <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="tab3_pushButton_FitModel">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="cursor">
-                 <cursorShape>PointingHandCursor</cursorShape>
-                </property>
-                <property name="text">
-                 <string>Fit Model</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
                 </property>
                </widget>
               </item>

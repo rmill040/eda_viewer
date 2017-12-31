@@ -1,26 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function
 
-from collections import OrderedDict
-import json
-import numpy as np
-import os
-import pandas as pd
-from PySide.QtCore import QFile, QMetaObject
-from PySide.QtGui import QMessageBox
-from PySide.QtUiTools import QUiLoader
-import scipy.stats as ss
-from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
-from sklearn.ensemble import (ExtraTreesClassifier, ExtraTreesRegressor,
-                              GradientBoostingClassifier, GradientBoostingRegressor,
-                              RandomForestClassifier, RandomForestRegressor)
-from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.svm import SVC, SVR
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-
+# Import libraries from api
+from utils_api import *
 
 ###############
 """CONSTANTS"""
@@ -35,6 +16,7 @@ WEBSITE        = "https://github.com/rmill040/eda_viewer"
 UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
 USE_DARK_THEME = True
 PLOTS_FOR_PRED = ['Scatter', 'Line', 'Scatter + Line']
+N_SPLITS       = 3
 
 
 DTYPE_TO_LABEL = {'int64': 'integer', 
@@ -133,7 +115,7 @@ def get_model(model_name, model_type):
             'Support Vector Machine': SVC,
             'Neural Network': MLPClassifier,
             'Gaussian Process': GaussianProcessClassifier,
-            'Linear Model': LinearRegression,
+            'Linear Model': LogisticRegression,
             'Extra Trees': ExtraTreesClassifier,
             'Gradient Boosting': GradientBoostingClassifier,
             'Decision Tree': DecisionTreeClassifier
@@ -144,7 +126,7 @@ def get_model(model_name, model_type):
             'Support Vector Machine': SVR,
             'Neural Network': MLPRegressor,
             'Gaussian Process': GaussianProcessRegressor,
-            'Linear Model': LogisticRegression,
+            'Linear Model': LinearRegression,
             'Extra Trees': ExtraTreesRegressor,
             'Gradient Boosting': GradientBoostingRegressor,
             'Decision Tree': DecisionTreeRegressor
@@ -298,7 +280,7 @@ def value_counts_grouped(data, value_counts):
     return pd.DataFrame(values, columns=['Count'], index=index)
 
 
-def cross_validation_predictions(X, y, model, model_type):
+def unsupervised_ml(X, model):
     """ADD
     
     Parameters
@@ -307,8 +289,55 @@ def cross_validation_predictions(X, y, model, model_type):
     Returns
     -------
     """
+    # Fit model, make class predictions, calculate clustering metrics
+    y_pred  = model.fit_predict(X)
+    scores  = [silhouette_score(X, y_pred), calinski_harabaz_score(X, y_pred)]
+
+    return y_pred, scores
+
+
+def supervised_ml(X, y, model, model_type):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    # Define cross-validation generator
+    y_pred, scores = np.zeros(y.shape), np.zeros(N_SPLITS)
     if model_type == 'Regression':
-        pass
+        cv_generator = KFold(n_splits=N_SPLITS, shuffle=True).split(X)
+    else:
+        cv_generator = StratifiedKFold(n_splits=N_SPLITS, shuffle=True).split(X, y)
+
+    # Iterate over train, test splits
+    fold = 0
+    for train_idx, test_idx in cv_generator:
+        
+        # Separate into train/test and features/labels
+        X_train, X_test = X[train_idx], X[test_idx]
+        y_train, y_test = y[train_idx], y[test_idx]
+
+        # Standardize data
+        scaler          = StandardScaler().fit(X_train)
+        X_train, X_test = scaler.transform(X_train), scaler.transform(X_test)
+
+        # Train and make predictions
+        model.fit(X_train, y_train)
+        y_pred[test_idx] = model.predict(X_test)
+
+        # Calculate score
+        if model_type == 'Regression':
+            scores[fold] = mean_squared_error(y_test, y_pred[test_idx])
+        else:
+            scores[fold] = accuracy_score(y_test, y_pred[test_idx])
+
+        fold += 1
+
+    # Return predictions
+    return y_pred, scores
 
 
 def model_metrics(y_true, y_pred, model_type):

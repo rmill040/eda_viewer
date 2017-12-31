@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 
-# Set matplotlib backend to PySide
-import matplotlib
-matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4'] = 'PySide'
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-import matplotlib.pyplot as plt
+# Import libraries from api
+from visual_api import *
 
 # Set plotting style
 plt.style.use('seaborn-darkgrid')
+
+# Define colors to use
+COLORS = ['red', 'orange', 'cyan', 'purple', 'teal', 'dodgerblue', 
+          'darkgreen', 'darksalmon', 'slategrey']
 
 class MplCanvas(FigureCanvas):
     """Base MPL widget for plotting
@@ -25,6 +24,7 @@ class MplCanvas(FigureCanvas):
         self.axes = self.fig.add_subplot(111)
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
+        self._predictions_added = 0
 
 
 class DynamicMplCanvas(MplCanvas):
@@ -75,6 +75,8 @@ class DynamicMplCanvas(MplCanvas):
         """
         # Clear plotting canvas
         self._reset_plots()
+        self.x = x
+
         try:
             # Scatter plot
             if plot_type == 'Scatter':
@@ -121,7 +123,7 @@ class DynamicMplCanvas(MplCanvas):
                 # Set title for any histogram
                 self.axes.set_title(title_str)
                 self.axes.set_ylabel('Value')
-                plt.legend()
+                plt.legend(loc='best')
 
 
             # Bar Chart
@@ -144,7 +146,7 @@ class DynamicMplCanvas(MplCanvas):
                 self.axes.set_title(title_str)
                 self.axes.set_xlabel(xlabel)
                 self.axes.set_ylabel('Value')
-                plt.legend()
+                plt.legend(loc='best')
 
             # Boxplot
             else:
@@ -185,7 +187,7 @@ class DynamicMplCanvas(MplCanvas):
             return str(e)
 
 
-    def add_predictions_to_plot(self):
+    def add_predictions_to_plot(self, y_pred, model_type, model_name):
         """ADD
         
         Parameters
@@ -194,4 +196,15 @@ class DynamicMplCanvas(MplCanvas):
         Returns
         -------
         """
-        pass
+        if self._predictions_added > (len(COLORS)-1): self._predictions_added = 0
+        try:
+            if model_type == 'Regression':
+                self.axes.scatter(self.x, y_pred, label='Predicted: {}'.format(model_name),
+                                  color=COLORS[self._predictions_added])
+            plt.legend(loc='best')
+            self.draw()
+            self._predictions_added += 1
+            return 'Success'
+
+        except Exception as e:
+            return str(e)

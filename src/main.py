@@ -1,33 +1,13 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function
 
-# Set matplotlib backend to PySide
-import matplotlib
-matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4'] = 'PySide'
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-
-import numpy as np
-import os
-import pandas as pd
-from PySide import QtCore
-from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
-                          QIcon, QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
-import qdarkstyle
-import sys
-from threading import Thread
-
-# Custom functions
-from about import AboutUi
-import utils
-from visual import DynamicMplCanvas
+# Import libraries from api
+from main_api import *
 
 # TODO:
 # - CHECK DTYPES FOR PLOTTING
 # - Add tooltips (use Designer)
 # - Add error checking (consider making separate helper functions to check data configuration)
 # - Add status bar updates where necessary
-# - Add functionality for machine learning (use Threading)
 # - Add keyboard shortcuts
 # - Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
 # - Connect all menu item buttons
@@ -359,6 +339,7 @@ class MainUi(QMainWindow):
                               informativeText="Reason:\nNo data loaded",
                               type="error")         
             return
+
 
     ############################
     # TAB 1 DATA UI: FUNCTIONS #
@@ -930,22 +911,97 @@ class MainUi(QMainWindow):
             try:
                 # Clustering model
                 if self.model_type == 'Clustering':
-                    X         = np.column_stack([self.X.reshape(-1, 1), self.y.reshape(-1, 1)])
-                    y_classes = self.model.fit_predict(X)
+                    X_             = np.column_stack([self.X, self.y.reshape(-1, 1)])
+                    y_pred, scores = utils.unsupervised_ml(X=X_, model=self.model)
 
-                # Regression model
-                elif self.model_type == 'Regression':
-                    pass
-                
-                # Classification model
+                # Regression or classification model
                 else:
-                    pass
+                    y_pred, scores = \
+                    utils.supervised_ml(X=self.X, y=self.y, model=self.model, 
+                        model_type=self.model_type)
 
                 # Emit all signals
-                self.data_signal.emit([ADD])
+                self.data_signal.emit(['Success', y_pred, scores])
 
             except Exception as e:
                 self.data_signal.emit([str(e)])
+
+
+    def slot_ThreadFitModel(self, data_signal):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        status = data_signal[0]
+        if status != 'Success':
+            utils.message_box(message="Error Fitting Model",
+                              informativeText="Reason:\n%s" % status,
+                              type="error") 
+        else:
+            # Unpack results and update widget
+            self.y_pred = data_signal[1]
+            self.scores = data_signal[2] 
+
+            # Clear widget and write overall model information
+            self.tab3_plainTextEdit_ModelSummary.clear()
+            self.tab3_plainTextEdit_ModelSummary.insertPlainText("Model Type: %s\nModel Name: %s\n\n" % \
+                    (self.model_type, self.model_name))
+
+            # Write specific model information to widget
+            if self.model_type in ['Classification', 'Regression']: 
+                if self.model_type == 'Classification': 
+                    metric_str = 'Accuracy'
+                else:
+                    metric_str = 'Mean Squared Error'
+
+                # CV results
+                for fold, score in enumerate(self.scores):
+                    self.tab3_plainTextEdit_ModelSummary.insertPlainText("Fold %d: %s = %.3f\n" % \
+                        ((fold+1), metric_str, score))
+
+                self.tab3_plainTextEdit_ModelSummary.insertPlainText("Overall %s: %.3f +/- %.3f" % \
+                        (metric_str, self.scores.mean(), self.scores.std()))
+
+                # If add predictions to plot
+                if self.tab3_checkBox_AddPredictions.isChecked():
+                    self.add_predictions(y_pred=self.y_pred, model_type=self.model_type,
+                                         model_name=self.model_name)
+
+
+            else:
+                metric_str = ['Silhouette Score', 'Calinski Harabaz Score']
+
+                # Write specific model information to widget
+                for name, metric in zip(metric_str, self.scores):
+                    self.tab3_plainTextEdit_ModelSummary.insertPlainText("Metric: %s = %.3f\n" % \
+                        (name, metric))  
+
+
+        # Change back to original push button
+        self.tab3_pushButton_FitModel.setText('Fit Model') 
+        self.tab3_pushButton_FitModel.setStyleSheet('') 
+        self.tab3_pushButton_FitModel.setIcon(QIcon('../icons/play.png'))
+        self.tab3_pushButton_FitModel.setDisabled(False)
+
+
+    def run(self, X, y, model):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        self.fit_model_thread = \
+            self.ThreadFitModel(X=X, y=y, model_type=self.model_type, model=model, 
+                                pushButton=self.tab3_pushButton_FitModel)
+        self.fit_model_thread.data_signal.connect(self.slot_ThreadFitModel)
+        self.fit_model_thread.start()
 
 
     def fit_model(self):
@@ -987,7 +1043,7 @@ class MainUi(QMainWindow):
 
             # Try and convert x and y to numeric for machine learning model
             try:
-                x = self.data[xlabel].values.astype(float)
+                X = self.data[xlabel].values.astype(float).reshape(-1, 1)
                 y = self.data[ylabel].values.astype(float)
             
             except Exception as e:
@@ -1000,7 +1056,7 @@ class MainUi(QMainWindow):
             try:
                 params = utils.text_to_dict(self.tab3_plainTextEdit_ModelParameters.toPlainText())
                 model  = utils.get_model(model_name=self.model_name, model_type=self.model_type)
-                
+
                 # Now try and update model with each parameter and skip ones that are invalid
                 n_failed, n_names = 0, []
                 for key, value in params.iteritems():
@@ -1022,14 +1078,79 @@ class MainUi(QMainWindow):
                                   type="error")
                 return
 
-            # Fit model to data (in thread)
-            # ADD CODE HERE
+            # Run model (in separate thread)  
+            self.run(X=X, y=y, model=model)
+
 
         else:
             utils.message_box(message="Error Fitting %s Model" % self.model_type,
                               informativeText="Reason:\nNot data loaded",
                               type="error")
-            return    
+            return 
+
+
+    class ThreadAddPredictionsToPlot(QtCore.QThread):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """ 
+        # Define signals
+        data_signal = QtCore.Signal(list)
+
+
+        def __init__(self, func, kwargs):
+            QtCore.QThread.__init__(self)
+            self.func   = func
+            self.kwargs = kwargs
+
+
+        def __del__(self):
+            """ADD DESCRIPTION"""
+            self.wait()
+
+
+        def run(self):
+            """ADD DESCRIPTION"""
+            status = self.func(**self.kwargs)
+            self.data_signal.emit([status]) 
+
+
+    def slot_ThreadAddPredictionsToPlot(self, data_signal):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        status = data_signal[0]
+        if status != 'Success':
+            utils.message_box(message="Error Adding Predictions to Plot",
+                              informativeText="Reason:\n%s" % status,
+                              type="error")   
+
+
+    def add_predictions(self, y_pred, model_type, model_name):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        self.add_prediction_thread = \
+            self.ThreadAddPredictionsToPlot(func=self.MplCanvas.add_predictions_to_plot,
+                                            kwargs={'y_pred': y_pred,
+                                                    'model_type': model_type,
+                                                    'model_name': model_name})
+        self.add_prediction_thread.data_signal.connect(self.slot_ThreadAddPredictionsToPlot)        
+        self.add_prediction_thread.start()
 
 
 if __name__ == "__main__":
