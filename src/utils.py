@@ -13,11 +13,12 @@ BUILT_WITH     = "PySide + Python 2.7"
 LICENSE        = "https://github.com/rmill040/eda_viewer/blob/master/LICENSE"
 WEBSITE        = "https://github.com/rmill040/eda_viewer"
 
-UI_PATH        = os.path.join(os.path.abspath(__file__).split('utils.py')[0], 'gui.ui')
+MAIN_DIR       = os.path.abspath(__file__).split('src')[0]
+UI_PATH        = os.path.join(os.path.join(MAIN_DIR, 'src'), 'gui.ui')
+ICONS_PATH     = os.path.join(MAIN_DIR, 'icons')
 USE_DARK_THEME = True
 PLOTS_FOR_PRED = ['Scatter', 'Line', 'Scatter + Line']
 N_SPLITS       = 3
-
 
 DTYPE_TO_LABEL = {'int64': 'integer', 
                   'float64': 'float',
@@ -192,7 +193,7 @@ def message_box(message, informativeText, type, question=False):
     if question:
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        msg.exec_()
+        return msg.exec_()
     else:
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
@@ -350,6 +351,23 @@ def model_metrics(y_true, y_pred, model_type):
     -------
     """
     pass
+
+
+def get_spaced_colors(n, offset):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    max_value = 16581375 # 255**3
+    interval  = int(max_value / float(n + offset*10))
+    colors    = [hex(I)[2:].zfill(6) for I in range(0, max_value, interval)]
+    for i in colors: yield [(int(i[:2], 16)/float(255), 
+                             int(i[2:4], 16)/float(255), 
+                             int(i[4:], 16)/float(255))]
 
 
 if __name__ == "__main__":

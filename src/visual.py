@@ -7,8 +7,10 @@ from visual_api import *
 plt.style.use('seaborn-darkgrid')
 
 # Define colors to use
-COLORS = ['red', 'orange', 'cyan', 'purple', 'teal', 'dodgerblue', 
-          'darkgreen', 'darksalmon', 'slategrey']
+REG_COLORS   = ['red', 'orange', 'cyan', 'purple', 'teal', 'dodgerblue', 
+                'darkgreen', 'darksalmon', 'slategrey']
+CLF_COLORS   = [['green', 'red'], ['darkgreen', 'darksalmon'], ['purple', 'orange']]
+
 
 class MplCanvas(FigureCanvas):
     """Base MPL widget for plotting
@@ -20,11 +22,14 @@ class MplCanvas(FigureCanvas):
     -------
     """
     def __init__(self, parent=None, dpi=100):
-        self.fig  = plt.figure(dpi=dpi)
-        self.axes = self.fig.add_subplot(111)
+        self.fig                      = plt.figure(dpi=dpi)
+        self.axes                     = self.fig.add_subplot(111)
+        self._reg_predictions_added   = 0
+        self._clf_predictions_added   = 0
+        self._clust_predictions_added = 0
+
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
-        self._predictions_added = 0
 
 
 class DynamicMplCanvas(MplCanvas):
@@ -64,7 +69,7 @@ class DynamicMplCanvas(MplCanvas):
             pass
 
 
-    def update_plot(self, sample, x, y, xlabel, ylabel, plot_type, plot_generated):
+    def update_plot(self, sample, x, y, xlabel, ylabel, plot_type, plot_generated, checkbox):
         """ADD
         
         Parameters
@@ -73,15 +78,16 @@ class DynamicMplCanvas(MplCanvas):
         Returns
         -------
         """
-        # Clear plotting canvas
-        self._reset_plots()
+        # Clear plotting canvas and define variables used for plotting
+        self._reset_plots() 
         self.x = x
+        self.y = y
 
         try:
             # Scatter plot
             if plot_type == 'Scatter':
                 title_str = "Scatter: {} x {}".format(xlabel, ylabel)
-                self.axes.scatter(x, y)
+                self.axes.scatter(x, y, alpha=.6)
                 self.axes.set_xlabel(xlabel)
                 self.axes.set_ylabel(ylabel)
                 self.axes.set_title(title_str)
@@ -89,7 +95,7 @@ class DynamicMplCanvas(MplCanvas):
             # Line plot
             elif plot_type == 'Line':
                 title_str = "Line: {} x {}".format(xlabel, ylabel)
-                self.axes.plot(x, y)
+                self.axes.plot(x, y, alpha=.6)
                 self.axes.set_xlabel(xlabel)
                 self.axes.set_ylabel(ylabel)
                 self.axes.set_title(title_str)
@@ -97,7 +103,7 @@ class DynamicMplCanvas(MplCanvas):
             # Scatter + Line plot
             elif plot_type == 'Scatter + Line':
                 title_str = "Scatter + Line: {} x {}".format(xlabel, ylabel)
-                self.axes.plot(x, y, '-o')
+                self.axes.plot(x, y, '-o', alpha=.6)
                 self.axes.set_xlabel(xlabel)
                 self.axes.set_ylabel(ylabel)
                 self.axes.set_title(title_str)
@@ -179,11 +185,26 @@ class DynamicMplCanvas(MplCanvas):
             # Create better layout then draw
             plt.tight_layout()
             self.draw()
-            plot_generated[0] = True # This lets main UI know the plot generated
+
+            # Update plot status
+            plot_generated['status'] = True # This lets main UI know the plot generated
+            plot_generated['xlabel'] = xlabel
+            plot_generated['ylabel'] = ylabel
+
+            # Enable/disable checkbox based on plot types
+            if plot_type in utils.PLOTS_FOR_PRED:
+                checkbox.setEnabled(True)
+                checkbox.setChecked(True)
+            else:
+                checkbox.setEnabled(False)
+                checkbox.setChecked(False)
+
             return 'Success'
 
         except Exception as e:
-            plot_generated[0] = False # Sorry about your luck :(
+            plot_generated['status'] = False # Sorry about your luck :(
+            plot_generated['xlabel'] = 'None'
+            plot_generated['ylabel'] = 'None'
             return str(e)
 
 
@@ -196,14 +217,42 @@ class DynamicMplCanvas(MplCanvas):
         Returns
         -------
         """
-        if self._predictions_added > (len(COLORS)-1): self._predictions_added = 0
         try:
             if model_type == 'Regression':
+                if self._reg_predictions_added > (len(REG_COLORS)-1): self._reg_predictions_added = 0
+                
                 self.axes.scatter(self.x, y_pred, label='Predicted: {}'.format(model_name),
-                                  color=COLORS[self._predictions_added])
-            plt.legend(loc='best')
+                                  color=REG_COLORS[self._reg_predictions_added], alpha=.6)
+                self._reg_predictions_added += 1
+            
+            elif model_type == 'Classification':
+                if self._clf_predictions_added > (len(CLF_COLORS)-1): self._clf_predictions_added = 0
+                
+                # Plot hits and misses
+                hits, misses = np.where(y_pred == self.y)[0], np.where(y_pred != self.y)[0]
+                self.axes.scatter(self.x.iloc[hits], y_pred[hits], 
+                                  label='Correct: {}'.format(model_name), alpha=.6, facecolors='none', 
+                                  edgecolors=CLF_COLORS[self._clf_predictions_added][0])
+                self.axes.scatter(self.x.iloc[misses], y_pred[misses], 
+                                  label='Incorrect: {}'.format(model_name), alpha=.6, marker='x',
+                                  color=CLF_COLORS[self._clf_predictions_added][1])
+                self._clf_predictions_added += 1
+
+            else:
+                cluster_ids  = np.unique(y_pred)
+                CLUST_COLORS = utils.get_spaced_colors(len(cluster_ids)+1, offset=self._clust_predictions_added)
+
+                for i, label in enumerate(cluster_ids):
+                    idx = np.where(y_pred == label)[0]
+                    self.axes.scatter(self.x.iloc[idx], self.y.iloc[idx], 
+                                      label='Cluster {}: {}'.format(i, model_name),
+                                      color=next(CLUST_COLORS),
+                                      alpha=.6)
+                self._clust_predictions_added += 1
+            
+            # Add legend and draw plot
+            plt.legend(loc='upper left')
             self.draw()
-            self._predictions_added += 1
             return 'Success'
 
         except Exception as e:

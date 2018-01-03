@@ -55,6 +55,9 @@
            <bold>false</bold>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Plot area</string>
+         </property>
          <property name="autoFillBackground">
           <bool>true</bool>
          </property>
@@ -100,22 +103,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QComboBox" name="comboBox_XAxis">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="2" column="3">
         <widget class="QPushButton" name="pushButton_Generate">
          <property name="font">
@@ -127,6 +114,9 @@
          </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Generate plot and summary statistics</string>
          </property>
          <property name="text">
           <string>Generate</string>
@@ -145,6 +135,9 @@
            <weight>50</weight>
            <bold>false</bold>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Type of plot</string>
          </property>
          <item>
           <property name="text">
@@ -187,6 +180,9 @@
            <bold>false</bold>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Y-variable</string>
+         </property>
          <item>
           <property name="text">
            <string>None</string>
@@ -200,6 +196,9 @@
           <font>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Standardize X-variable</string>
          </property>
          <property name="text">
           <string>Standardize X</string>
@@ -237,9 +236,31 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Standardize Y-variable</string>
+         </property>
          <property name="text">
           <string>Standardize Y</string>
          </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QComboBox" name="comboBox_XAxis">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>X-variable</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -342,6 +363,9 @@
              <property name="cursor">
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
+             <property name="toolTip">
+              <string>Load data set</string>
+             </property>
              <property name="text">
               <string>Load Data</string>
              </property>
@@ -366,6 +390,9 @@
                  <pointsize>12</pointsize>
                 </font>
                </property>
+               <property name="toolTip">
+                <string>Number of rows in data set</string>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -377,6 +404,9 @@
                 <font>
                  <pointsize>12</pointsize>
                 </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of float data types</string>
                </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
@@ -414,6 +444,9 @@
                  <pointsize>12</pointsize>
                 </font>
                </property>
+               <property name="toolTip">
+                <string>Number of integer data types</string>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -425,6 +458,9 @@
                 <font>
                  <pointsize>12</pointsize>
                 </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of object data types</string>
                </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
@@ -485,6 +521,9 @@
                 <font>
                  <pointsize>12</pointsize>
                 </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of date/time data types</string>
                </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
@@ -574,6 +613,9 @@
                  <pointsize>12</pointsize>
                 </font>
                </property>
+               <property name="toolTip">
+                <string>Number of columns in data set</string>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -587,6 +629,9 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Displays variable names and data types</string>
              </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
@@ -662,6 +707,9 @@
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Summary statistics for X-variable</string>
+             </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
              </property>
@@ -690,6 +738,9 @@
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Frequency table for Y-variable</string>
+             </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
              </property>
@@ -717,6 +768,9 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Frequency table for X-variable</string>
              </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
@@ -754,6 +808,9 @@
            </item>
            <item row="0" column="1">
             <widget class="QLabel" name="tab2_label_YVariable">
+             <property name="toolTip">
+              <string>Summary statistics for Y-variable</string>
+             </property>
              <property name="text">
               <string>Y-Variable</string>
              </property>
@@ -771,6 +828,9 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Summary statistics for Y-variable</string>
              </property>
              <property name="frameShape">
               <enum>QFrame::WinPanel</enum>
@@ -800,6 +860,50 @@
            <string>Bivariate</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_5">
+           <item row="5" column="0" colspan="4">
+            <widget class="QGroupBox" name="tab3_groupBox_ModelSummary">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="title">
+              <string>Model Summary</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelSummary">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="toolTip">
+                 <string>Machine learning model summary</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::WinPanel</enum>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+                <property name="plainText">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
            <item row="2" column="3">
             <widget class="QLabel" name="tab3_label_LinkToModelAPI">
              <property name="font">
@@ -807,6 +911,12 @@
                <pointsize>12</pointsize>
                <underline>true</underline>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>URL for model API</string>
+             </property>
+             <property name="whatsThis">
+              <string/>
              </property>
              <property name="styleSheet">
               <string notr="true">color: rgb(0, 0, 255)</string>
@@ -865,6 +975,9 @@
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Machine learning model name</string>
+             </property>
             </widget>
            </item>
            <item row="1" column="2">
@@ -879,6 +992,9 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Type of machine learning</string>
              </property>
              <item>
               <property name="text">
@@ -895,110 +1011,6 @@
                <string>Clustering</string>
               </property>
              </item>
-            </widget>
-           </item>
-           <item row="5" column="0" colspan="4">
-            <widget class="QGroupBox" name="tab3_groupBox_ModelSummary">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="title">
-              <string>Model Summary</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelSummary">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::WinPanel</enum>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-                <property name="plainText">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="4">
-            <widget class="QGroupBox" name="tab3_groupBox_ModelParameters">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="title">
-              <string>Model Parameters: Key/Value Format</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_6">
-              <item row="0" column="2">
-               <widget class="QPushButton" name="tab3_pushButton_FitModel">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="cursor">
-                 <cursorShape>PointingHandCursor</cursorShape>
-                </property>
-                <property name="text">
-                 <string>Fit Model</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelParameters">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::WinPanel</enum>
-                </property>
-                <property name="plainText">
-                 <string/>
-                </property>
-                <property name="placeholderText">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
             </widget>
            </item>
            <item row="3" column="0" colspan="4">
@@ -1029,12 +1041,84 @@
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Add model predictions to current plot</string>
+             </property>
              <property name="text">
               <string>Add Predictions to Plot</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="4">
+            <widget class="QGroupBox" name="tab3_groupBox_ModelParameters">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="title">
+              <string>Model Parameters: Key/Value Format</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="1" column="2">
+               <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelParameters">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="toolTip">
+                 <string>Machine learning model parameters</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::WinPanel</enum>
+                </property>
+                <property name="plainText">
+                 <string/>
+                </property>
+                <property name="placeholderText">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="tab3_pushButton_FitModel">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="toolTip">
+                 <string>Fits machine learning model</string>
+                </property>
+                <property name="text">
+                 <string>Fit Model</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>

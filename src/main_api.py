@@ -10,7 +10,7 @@ import numpy as np
 import os
 import pandas as pd
 from PySide import QtCore
-from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QHBoxLayout, QHeaderView, 
+from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QFont, QHBoxLayout, QHeaderView, 
                           QIcon, QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
 import qdarkstyle
 import sys

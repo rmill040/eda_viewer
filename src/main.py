@@ -5,13 +5,21 @@ from main_api import *
 
 # TODO:
 # - CHECK DTYPES FOR PLOTTING
-# - Add tooltips (use Designer)
 # - Add error checking (consider making separate helper functions to check data configuration)
 # - Add status bar updates where necessary
 # - Add keyboard shortcuts
+
 # - Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
+# # Font size
+# self.font_model_params = QFont()
+# self.font_model_params.setPointSize(90)
+# self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_params)
+
+# self.font_model_summary = QFont()
+# self.font_model_summary.setPointSize(30)
+# self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
+
 # - Connect all menu item buttons
-# - Try better printing for tab 2 univariate statistics
 # - Build freeze scripts for different operating systems
 # - Unit tests
 
@@ -48,11 +56,28 @@ class MainUi(QMainWindow):
         # FILE MENU UI #
         ################
 
-        # Reset data button
+        # File -> Reset data button
         self.menuItem_ResetData.triggered.connect(self.reset)
 
-        # Exit button (TODO: ADD ARE YOU SURE BEFORE EXITING)
+        # File -> Save -> Data button
+        self.menuItem_Data.triggered.connect(self.save_data)
+
+        # File -> Save -> Statistics button
+        self.menuItem_Statistics.triggered.connect(self.save_statistics)
+
+        # File -> Save -> Plot button
+        self.menuItem_Plot.triggered.connect(self.save_plot)
+
+        # File -> Save -> Save All button
+        self.menuItem_All.triggered.connect(self.save_all)
+
+        # File -> Exit button
         self.menuItem_Exit.triggered.connect(self.exit)
+
+        # Help -> Documentation button
+        self.menuItem_Documentation.triggered.connect(self.documentation)
+
+        # Help -> About button
         self.menuItem_About.triggered.connect(AboutUi)
 
 
@@ -90,7 +115,8 @@ class MainUi(QMainWindow):
         #######################
 
         # Populate combo box for model names
-        self.model_type = self.tab3_comboBox_ModelType.currentText()
+        self._n_models_fitted = 0
+        self.model_type       = self.tab3_comboBox_ModelType.currentText()
         self.tab3_comboBox_ModelName.addItems(utils.LINK_MODEL_API[self.model_type].keys())
 
         # Activate URL for model API links
@@ -117,13 +143,16 @@ class MainUi(QMainWindow):
         # Connect fit model button
         self.tab3_pushButton_FitModel.clicked.connect(self.fit_model)
 
+        # Disable add predictions checkbox for now
+        self.tab3_checkBox_AddPredictions.setEnabled(False)
+
 
         ################
         # VISUALIZE UI #
         ################
 
         # Add matplotlib widget
-        self.plot_generated = [False]
+        self.plot_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
         self.vbox           = QVBoxLayout()
         self.MplCanvas      = DynamicMplCanvas()
         self.navi_toolbar   = NavigationToolbar(self.MplCanvas, self)
@@ -153,7 +182,6 @@ class MainUi(QMainWindow):
         if not self.data_loaded:
             utils.message_box(message="Error With Data Reset",
                               informativeText="Reason:\nNo data loaded",
-                              windowTitle="Error With Data Reset",
                               type="error") 
         else: 
             reply = QMessageBox.question(self, 
@@ -176,10 +204,95 @@ class MainUi(QMainWindow):
         if reply == QMessageBox.Yes: self.close()
 
 
+    def save_data(self):
+        """ADD DESCRIPTION"""
+        if self.data_loaded:
+            try:
+                options   = QFileDialog.Options()
+                options   |= QFileDialog.DontUseNativeDialog
+                file_info = QFileDialog.getSaveFileName(self, "Save Data", "/",
+                                                        "*.csv;;"
+                                                        "*.tsv;;"
+                                                        "*.txt",
+                                                        options=options)
+                if file_info[0]: self.data.to_csv(''.join(''.join(file_info).split('*')), index=False)
+            
+            except Exception as e:
+                utils.message_box(message="Error Saving Data",
+                                  informativeText="Reason:\n%s" % str(e),
+                                  type="error")         
+                return
+
+        else:
+            utils.message_box(message="Error Saving Data",
+                              informativeText="Reason:\nNo data loaded",
+                              type="error")         
+            return
+
+
+    def save_statistics(self):
+        """ADD DESCRIPTION"""
+        utils.message_box(message="NOT IMPLEMENTED ERROR",
+                          informativeText="",
+                          type="warning")         
+        return
+
+
+    def save_plot(self):
+        """ADD DESCRIPTION"""
+        if self.plot_generated['status']:
+            try:
+                options   = QFileDialog.Options()
+                options   |= QFileDialog.DontUseNativeDialog
+                file_info = QFileDialog.getSaveFileName(self, "Save Plot", 
+                                                        "/", "*.png", options=options)
+                if file_info[0]: self.MplCanvas.fig.savefig(file_info[0] + '.png', dpi=150)
+
+            except Exception as e:
+                utils.message_box(message="Error Saving Plot",
+                                  informativeText="Reason:\n%s" % str(e),
+                                  type="error")         
+                return
+
+        else:
+            utils.message_box(message="Error Saving Plot",
+                              informativeText="Reason:\nNo plot generated",
+                              type="error")         
+            return
+
+
+    def save_all(self):
+        """ADD DESCRIPTION"""
+        utils.message_box(message="NOT IMPLEMENTED ERROR",
+                          informativeText="",
+                          type="warning")         
+        return
+
+
+    def documentation(self):
+        """ADD DESCRIPTION"""
+        utils.message_box(message="NOT IMPLEMENTED ERROR",
+                          informativeText="",
+                          type="warning")         
+        return 
+
+
 
     ###########################
     # VISUALIZE UI: FUNCTIONS #
     ###########################
+
+
+    def update_combobox_xyaxis(self):
+        """ADD DESCRIPTION"""
+        # Clear items first
+        self.comboBox_XAxis.clear()
+        self.comboBox_YAxis.clear()
+
+        # Update items
+        self.comboBox_XAxis.addItems(['None'] + self.var_names)
+        self.comboBox_YAxis.addItems(['None'] + self.var_names)
+
 
     def update_checkbox(self):
         """ADD DESCRIPTION"""
@@ -253,7 +366,7 @@ class MainUi(QMainWindow):
         if status != 'Success':
             utils.message_box(message="Error Generating Plot",
                               informativeText="Reason:\n%s" % status,
-                              type="error")   
+                              type="error")
 
 
     def update_plot(self, pushButton, func, kwargs):
@@ -321,17 +434,22 @@ class MainUi(QMainWindow):
                 'xlabel': xlabel,
                 'ylabel': ylabel,
                 'plot_type': plot_type,
-                'plot_generated': self.plot_generated # Thread will set this flag to True when done
+                'plot_generated': self.plot_generated, # Thread will set this flag to True when done
+                'checkbox': self.tab3_checkBox_AddPredictions
                 }
             self.update_plot(pushButton=self.pushButton_Generate, func=self.MplCanvas.update_plot, 
                              kwargs=kwargs)
-
 
             # Calculate descriptive statistics (in separate thread)
             self.univariate_descriptives(x=x,
                                          y=y,
                                          xlabel=xlabel,
                                          ylabel=ylabel)
+
+            # Reset models fitted info
+            self.tab3_plainTextEdit_ModelSummary.clear()
+            self._n_models_fitted = 0
+
 
         # Data not loaded yet
         else:
@@ -393,17 +511,6 @@ class MainUi(QMainWindow):
                 else:
                     self.tab1_tableWidget_VariableInfo.item(row, 0).setText(self.var_names[row])
                     self.already_changed = False
-
-
-    def update_combobox_xyaxis(self):
-        """ADD DESCRIPTION"""
-        # Clear items first
-        self.comboBox_XAxis.clear()
-        self.comboBox_YAxis.clear()
-
-        # Update items
-        self.comboBox_XAxis.addItems(['None'] + self.var_names)
-        self.comboBox_YAxis.addItems(['None'] + self.var_names)
 
 
     def update_variable_dtype(self):
@@ -566,7 +673,7 @@ class MainUi(QMainWindow):
         # File dialog options for opening single file
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file, _ = QFileDialog.getOpenFileName(self, "Load: Data", "/",
+        file, _ = QFileDialog.getOpenFileName(self, "Load Data", "/",
                                               "*.csv files (*.csv);;"
                                               "*.tsv files (*tsv);;"
                                               "*.txt files (*.txt);;",
@@ -850,6 +957,7 @@ class MainUi(QMainWindow):
     # TAB 3 BIVARIATE UI: FUNCTIONS #
     #################################
 
+
     def add_model_names(self):
         """ADD DESCRIPTION"""
         self.model_type = self.tab3_comboBox_ModelType.currentText()
@@ -885,12 +993,14 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal  = QtCore.Signal(list)
 
-        def __init__(self, X, y, model_type, model, pushButton):
+        def __init__(self, X, y, xlabel, ylabel, model_type, model, pushButton):
             QtCore.QThread.__init__(self)
 
             # Define attributes
             self.X          = X
             self.y          = y
+            self.xlabel     = xlabel
+            self.ylabel     = ylabel
             self.model_type = model_type
             self.model      = model
 
@@ -921,7 +1031,7 @@ class MainUi(QMainWindow):
                         model_type=self.model_type)
 
                 # Emit all signals
-                self.data_signal.emit(['Success', y_pred, scores])
+                self.data_signal.emit(['Success', y_pred, scores, self.xlabel, self.ylabel])
 
             except Exception as e:
                 self.data_signal.emit([str(e)])
@@ -943,13 +1053,18 @@ class MainUi(QMainWindow):
                               type="error") 
         else:
             # Unpack results and update widget
-            self.y_pred = data_signal[1]
-            self.scores = data_signal[2] 
+            self._n_models_fitted += 1
+            y_pred = data_signal[1]
+            scores = data_signal[2] 
+            xlabel = data_signal[3]
+            ylabel = data_signal[4]
 
             # Clear widget and write overall model information
-            self.tab3_plainTextEdit_ModelSummary.clear()
-            self.tab3_plainTextEdit_ModelSummary.insertPlainText("Model Type: %s\nModel Name: %s\n\n" % \
-                    (self.model_type, self.model_name))
+            self.tab3_plainTextEdit_ModelSummary.insertPlainText("Model ID: %d\nModel Type: %s\nModel Name: %s\n\n" % \
+                    ((self._n_models_fitted), self.model_type, self.model_name))
+
+            self.tab3_plainTextEdit_ModelSummary.insertPlainText("X-Axis: %s\nY-Axis: %s\n\n"  % \
+                    (xlabel, ylabel))
 
             # Write specific model information to widget
             if self.model_type in ['Classification', 'Regression']: 
@@ -959,27 +1074,28 @@ class MainUi(QMainWindow):
                     metric_str = 'Mean Squared Error'
 
                 # CV results
-                for fold, score in enumerate(self.scores):
+                for fold, score in enumerate(scores):
                     self.tab3_plainTextEdit_ModelSummary.insertPlainText("Fold %d: %s = %.3f\n" % \
                         ((fold+1), metric_str, score))
 
-                self.tab3_plainTextEdit_ModelSummary.insertPlainText("Overall %s: %.3f +/- %.3f" % \
-                        (metric_str, self.scores.mean(), self.scores.std()))
-
-                # If add predictions to plot
-                if self.tab3_checkBox_AddPredictions.isChecked():
-                    self.add_predictions(y_pred=self.y_pred, model_type=self.model_type,
-                                         model_name=self.model_name)
-
+                self.tab3_plainTextEdit_ModelSummary.insertPlainText("Overall %s: %.3f +/- %.3f\n" % \
+                        (metric_str, scores.mean(), scores.std()))
+                self.tab3_plainTextEdit_ModelSummary.insertPlainText('--------\n\n')
 
             else:
                 metric_str = ['Silhouette Score', 'Calinski Harabaz Score']
 
                 # Write specific model information to widget
-                for name, metric in zip(metric_str, self.scores):
+                for name, metric in zip(metric_str, scores):
                     self.tab3_plainTextEdit_ModelSummary.insertPlainText("Metric: %s = %.3f\n" % \
                         (name, metric))  
+                self.tab3_plainTextEdit_ModelSummary.insertPlainText('--------\n\n')
 
+
+        # If add predictions to plot
+        if self.tab3_checkBox_AddPredictions.isChecked():
+            self.add_predictions(y_pred=y_pred, xlabel=xlabel, ylabel=ylabel, 
+                                 model_type=self.model_type, model_name=self.model_name)
 
         # Change back to original push button
         self.tab3_pushButton_FitModel.setText('Fit Model') 
@@ -988,7 +1104,7 @@ class MainUi(QMainWindow):
         self.tab3_pushButton_FitModel.setDisabled(False)
 
 
-    def run(self, X, y, model):
+    def run(self, X, y, xlabel, ylabel, model):
         """ADD
         
         Parameters
@@ -998,8 +1114,8 @@ class MainUi(QMainWindow):
         -------
         """
         self.fit_model_thread = \
-            self.ThreadFitModel(X=X, y=y, model_type=self.model_type, model=model, 
-                                pushButton=self.tab3_pushButton_FitModel)
+            self.ThreadFitModel(X=X, y=y, xlabel=xlabel, ylabel=ylabel, model_type=self.model_type, 
+                                model=model, pushButton=self.tab3_pushButton_FitModel)
         self.fit_model_thread.data_signal.connect(self.slot_ThreadFitModel)
         self.fit_model_thread.start()
 
@@ -1035,7 +1151,7 @@ class MainUi(QMainWindow):
                     return
 
                 # If add predictions to plot checked, make sure plot is already generated
-                if False in self.plot_generated: # This is a list with 1 element
+                if not self.plot_generated['status']:
                     utils.message_box(message="Error Adding Predictions to %s Plot" % plot_type,
                                       informativeText="Reason:\nNo plot generated yet",
                                       type="error")
@@ -1079,7 +1195,7 @@ class MainUi(QMainWindow):
                 return
 
             # Run model (in separate thread)  
-            self.run(X=X, y=y, model=model)
+            self.run(X=X, y=y, xlabel=xlabel, ylabel=ylabel, model=model)
 
 
         else:
@@ -1135,7 +1251,7 @@ class MainUi(QMainWindow):
                               type="error")   
 
 
-    def add_predictions(self, y_pred, model_type, model_name):
+    def add_predictions(self, y_pred, xlabel, ylabel, model_type, model_name):
         """ADD
         
         Parameters
@@ -1144,6 +1260,17 @@ class MainUi(QMainWindow):
         Returns
         -------
         """
+        # Warning if plot variables are not same as machine learning variables
+        if xlabel != self.plot_generated['xlabel'] or ylabel != self.plot_generated['ylabel']:
+            reply = utils.message_box(message="Warning Variable Mismatch",
+                                    informativeText=("Machine learning variables do not match plot "
+                                                     "variables. Do you want to add predictions?"),
+                                    type="warning",
+                                    question=True) 
+            
+            if reply == QMessageBox.No: return
+
+        # Create thread and add predictions
         self.add_prediction_thread = \
             self.ThreadAddPredictionsToPlot(func=self.MplCanvas.add_predictions_to_plot,
                                             kwargs={'y_pred': y_pred,
