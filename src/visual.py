@@ -3,23 +3,18 @@
 # Import libraries from api
 from visual_api import *
 
-# Set plotting style
-plt.style.use('seaborn-darkgrid')
-
-# Define colors to use
-REG_COLORS   = ['red', 'orange', 'cyan', 'purple', 'teal', 'dodgerblue', 
-                'darkgreen', 'darksalmon', 'slategrey']
-CLF_COLORS   = [['green', 'red'], ['darkgreen', 'darksalmon'], ['purple', 'orange']]
-
 
 class MplCanvas(FigureCanvas):
     """Base MPL widget for plotting
     
     Parameters
     ----------
+    FigureCanvas : FigureCanvasQTAgg
+        Canvas for plotting
 
     Returns
     -------
+    None
     """
     def __init__(self, parent=None, dpi=100):
         self.fig                      = plt.figure(dpi=dpi)
@@ -33,7 +28,7 @@ class MplCanvas(FigureCanvas):
 
 
 class DynamicMplCanvas(MplCanvas):
-    """A canvas that updates itself on call with a new plot."""
+    """A canvas that updates itself on call with a new plot"""
     def __init__(self, *args, **kwargs):
         MplCanvas.__init__(self, *args, **kwargs)
         self.compute_initial_figure()
@@ -41,20 +36,18 @@ class DynamicMplCanvas(MplCanvas):
 
     def compute_initial_figure(self):
         """Initial demo plot for matplotlib canvas"""
-        self.axes.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 
-                       [70, 90, 100, 110, 130, 150, 160, 170, 180, 190, 215, 0, 0], '-o',
+        self.axes.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 
+                       [60, 70, 85, 100, 125, 160, 195, 225, 0, 0], '-o',
                        color='green')
         self.axes.set_xlabel("Number of Espresso Shots")
         self.axes.set_ylabel("Heart Rate")
-        self.axes.annotate('No more heart rate', xy=(11, 0), xytext=(8, 20), 
-                          arrowprops=dict(facecolor='black', shrink=0.05))
-        self.axes.set_ylim([-2, 220])
+        self.axes.set_ylim([-2, 230])
         self.axes.set_title("Demo Plot: Number of Espresso Shots x Heart Rate")
         plt.tight_layout()
 
 
     def _reset_plots(self):
-        """ADD DESCRIPTION"""
+        """Resets plots for update_plot function"""
         try:
             self.fig.delaxes(self.axes)
             self.axes = self.fig.add_subplot(111)
@@ -70,13 +63,38 @@ class DynamicMplCanvas(MplCanvas):
 
 
     def update_plot(self, sample, x, y, xlabel, ylabel, plot_type, plot_generated, checkbox):
-        """ADD
+        """Updates plot based on user input and plot type
         
         Parameters
         ----------
+        sample : pandas Series
+            Unique sample IDs
+
+        x : pandas Series
+            x variable for plotting
+
+        y : pandas Series
+            y variable for plotting
+
+        xlabel : str
+            Name of x variable
+
+        ylabel : str
+            Name of y variable
+
+        plot_type : str
+            Name of plot to generate
+
+        plot_generated : dict
+            Holds status information about generated plot
+
+        checkbox : PySide CheckBox widget
+            "Add Predictions to Plot" check box widget
         
         Returns
         -------
+        status : str
+            Status of method
         """
         # Clear plotting canvas and define variables used for plotting
         self._reset_plots() 
@@ -182,7 +200,7 @@ class DynamicMplCanvas(MplCanvas):
                     self.axes_y.boxplot(y)
                     self.axes_y.set_title("Boxplot: {}".format(ylabel))
 
-            # Create better layout then draw
+            # Create better layout and draw
             plt.tight_layout()
             self.draw()
 
@@ -209,13 +227,23 @@ class DynamicMplCanvas(MplCanvas):
 
 
     def add_predictions_to_plot(self, y_pred, model_type, model_name):
-        """ADD
+        """Adds machine learning predictions to currently generated plot
         
         Parameters
         ----------
+        y_pred : 1d array-like
+            Machine learning model predictions
+
+        model_type : str
+            Type of machine learning model
+
+        model_name : str
+            Name of machine learning model
         
         Returns
         -------
+        status : str
+            Status of method
         """
         try:
             if model_type == 'Regression':

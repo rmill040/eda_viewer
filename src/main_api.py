@@ -1,5 +1,10 @@
 from __future__ import division, print_function
 
+__description__= \
+"""
+Core functionality of application
+""".strip()
+
 # Set matplotlib backend to PySide
 import matplotlib
 matplotlib.use('Qt4Agg')
@@ -11,7 +16,8 @@ import os
 import pandas as pd
 from PySide import QtCore
 from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QFont, QHBoxLayout, QHeaderView, 
-                          QIcon, QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout, QWidget)
+                          QIcon, QMainWindow, QMessageBox, QPixmap, QTableWidgetItem, QVBoxLayout, 
+                          QWidget)
 import qdarkstyle
 import sys
 from threading import Thread

@@ -2,10 +2,16 @@
 import os
 import sys
 
-PLATFORM      = sys.platform
-PYTHON        = sys.executable
-APP           = os.path.join(os.path.abspath(__file__).split('setup.py')[0], 'main.py')
-CALL          = PYTHON + ' ' + APP
+__description__ = \
+"""
+Script that attempts to generate an alias for the app using "eda" to open the software
+""".strip()
+
+# Define variables to generate alias
+PLATFORM = sys.platform
+PYTHON   = sys.executable
+APP      = os.path.join(os.path.abspath(__file__).split('set_alias.py')[0], 'main.py')
+CALL     = PYTHON + ' ' + APP
 
 def main():
     # Detect OS and add alias via .bashrc or .bash_profile

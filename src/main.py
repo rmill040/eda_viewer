@@ -4,12 +4,16 @@
 from main_api import *
 
 # TODO:
-# - CHECK DTYPES FOR PLOTTING
-# - Add error checking (consider making separate helper functions to check data configuration)
-# - Add status bar updates where necessary
-# - Add keyboard shortcuts
+# 1. Add status bar updates where necessary
 
-# - Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
+# 2. Check data types when model type is selected --
+# load demo_data...contx1, conty, classification, fit model yields following error
+# Traceback (most recent call last):
+#   File "src/main.py", line 1152, in slot_ThreadFitModel
+#     self.add_predictions(y_pred=y_pred, xlabel=xlabel, ylabel=ylabel, 
+# UnboundLocalError: local variable 'y_pred' referenced before assignment
+
+# 3. Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
 # # Font size
 # self.font_model_params = QFont()
 # self.font_model_params.setPointSize(90)
@@ -19,9 +23,11 @@ from main_api import *
 # self.font_model_summary.setPointSize(30)
 # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
 
-# - Connect all menu item buttons
-# - Build freeze scripts for different operating systems
-# - Unit tests
+# 4. Connect all menu item buttons
+# 5. Build freeze scripts for different operating systems
+# 6. Fix data reset button to do actual reset
+# 7. Add threading to saving options
+# 8. Unit tests
 
 
 class MainUi(QMainWindow):
@@ -40,7 +46,7 @@ class MainUi(QMainWindow):
 
         # Set window title and icon, status bar, and force tab widget to open on data tab
         self.setWindowTitle('Exploratory Data Analysis Viewer')
-        self.setWindowIcon(QIcon('../icons/chart-line_black.png'))
+        self.setWindowIcon(QIcon(os.path.join(utils.ICONS_PATH, 'chart-line_black.png')))
         self.statusBar.showMessage("""Click "Load Data" button to begin""")
         self.tabWidget_Analysis.setCurrentIndex(0)
 
@@ -58,27 +64,38 @@ class MainUi(QMainWindow):
 
         # File -> Reset data button
         self.menuItem_ResetData.triggered.connect(self.reset)
+        self.menuItem_ResetData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'refresh.png')))
 
         # File -> Save -> Data button
         self.menuItem_Data.triggered.connect(self.save_data)
+        self.menuItem_Data.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'database.png')))
 
         # File -> Save -> Statistics button
         self.menuItem_Statistics.triggered.connect(self.save_statistics)
+        self.menuItem_Statistics.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'chart-timeline.png')))
 
         # File -> Save -> Plot button
         self.menuItem_Plot.triggered.connect(self.save_plot)
+        self.menuItem_Plot.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'image-area.png')))
+
+        # File -> Save
+        self.menuItem_Save.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'content-save.png')))
 
         # File -> Save -> Save All button
         self.menuItem_All.triggered.connect(self.save_all)
+        self.menuItem_All.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'content-save-all.png')))
 
         # File -> Exit button
         self.menuItem_Exit.triggered.connect(self.exit)
+        self.menuItem_Exit.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'window-close.png')))
 
         # Help -> Documentation button
         self.menuItem_Documentation.triggered.connect(self.documentation)
+        self.menuItem_Documentation.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'application.png')))
 
         # Help -> About button
         self.menuItem_About.triggered.connect(AboutUi)
+        self.menuItem_About.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'information-outline.png')))
 
 
         #####################
@@ -88,6 +105,7 @@ class MainUi(QMainWindow):
         # Connect load data button
         self.data_loaded = False
         self.tab1_pushButton_LoadData.clicked.connect(self.load_data)
+        self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
 
         # Connect variable names in table widget to item changed signal so that when
         # user changes the label, the app automatically updates other components with 
@@ -104,6 +122,8 @@ class MainUi(QMainWindow):
         ###########################
         # TAB 2 UNIVARIATE TAB UI #
         ###########################
+
+        self.stats_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
 
         # Update labels to reflect currently selected variable
         self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
@@ -142,6 +162,7 @@ class MainUi(QMainWindow):
 
         # Connect fit model button
         self.tab3_pushButton_FitModel.clicked.connect(self.fit_model)
+        self.tab3_pushButton_FitModel.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
 
         # Disable add predictions checkbox for now
         self.tab3_checkBox_AddPredictions.setEnabled(False)
@@ -163,6 +184,7 @@ class MainUi(QMainWindow):
 
         # Connect generate button
         self.pushButton_Generate.clicked.connect(self.generate_results)
+        self.pushButton_Generate.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
 
         # Connect combo boxes to check boxes
         self.comboBox_XAxis.activated.connect(self.update_checkbox)
@@ -178,7 +200,7 @@ class MainUi(QMainWindow):
     ######################
 
     def reset(self):
-        """ADD DESCRIPTION"""
+        """Resets data to original names and data types"""
         if not self.data_loaded:
             utils.message_box(message="Error With Data Reset",
                               informativeText="Reason:\nNo data loaded",
@@ -194,7 +216,7 @@ class MainUi(QMainWindow):
 
 
     def exit(self):
-        """ADD DESCRIPTION"""
+        """Exits application"""
         reply = QMessageBox.question(self, 
                                      'Message', 
                                      "Are you sure you want to exit?", 
@@ -205,7 +227,9 @@ class MainUi(QMainWindow):
 
 
     def save_data(self):
-        """ADD DESCRIPTION"""
+        """Saves data as specified extension"""
+        # TODO: threading
+
         if self.data_loaded:
             try:
                 options   = QFileDialog.Options()
@@ -221,25 +245,57 @@ class MainUi(QMainWindow):
                 utils.message_box(message="Error Saving Data",
                                   informativeText="Reason:\n%s" % str(e),
                                   type="error")         
-                return
 
         else:
             utils.message_box(message="Error Saving Data",
                               informativeText="Reason:\nNo data loaded",
                               type="error")         
-            return
 
 
     def save_statistics(self):
-        """ADD DESCRIPTION"""
-        utils.message_box(message="NOT IMPLEMENTED ERROR",
-                          informativeText="",
-                          type="warning")         
-        return
+        """Saves x and/or y variable statistics and frequency tables"""
+        # TODO: threading
+
+        # Check to make sure stats are first generated
+        if self.stats_generated['status']:
+            save_directory = QFileDialog.getExistingDirectory(self, 
+                                                             "Select directory to save statistics", 
+                                                             "/")
+            if save_directory:
+                try:
+                    data   = {}
+                    xlabel = self.stats_generated['xlabel']
+                    ylabel = self.stats_generated['ylabel']
+                    
+                    # Add x variable
+                    if xlabel != 'None':
+                        data[xlabel + '_stats'] = self.tab2_tableWidget_Xstats
+                        data[xlabel + '_freq']  = self.tab2_tableWidget_Xfreq
+                    
+                    # Add y variable
+                    if ylabel != 'None':
+                        data[ylabel + '_stats'] = self.tab2_tableWidget_Ystats
+                        data[ylabel + '_freq']  = self.tab2_tableWidget_Yfreq
+                    
+                    # Convert table widgets to pandas dataframes and write to disk
+                    dfs = utils.tablewidgets_to_dataframes(data)
+                    for basename, df in dfs.iteritems():
+                        fullname = os.path.join(save_directory, basename + '.csv')
+                        df.to_csv(fullname)
+
+                except Exception as e:
+                    utils.message_box(message="Error Saving Statistics",
+                                      informativeText="Reason:\n%s" % str(e),
+                                      type="error") 
+
+        else:
+            utils.message_box(message="Error Saving Statistics",
+                              informativeText="Reason:\nNo statistics calculated",
+                              type="error")         
 
 
     def save_plot(self):
-        """ADD DESCRIPTION"""
+        """Saves current generated plot"""
         if self.plot_generated['status']:
             try:
                 options   = QFileDialog.Options()
@@ -252,25 +308,28 @@ class MainUi(QMainWindow):
                 utils.message_box(message="Error Saving Plot",
                                   informativeText="Reason:\n%s" % str(e),
                                   type="error")         
-                return
 
         else:
             utils.message_box(message="Error Saving Plot",
                               informativeText="Reason:\nNo plot generated",
                               type="error")         
-            return
 
 
     def save_all(self):
-        """ADD DESCRIPTION"""
-        utils.message_box(message="NOT IMPLEMENTED ERROR",
-                          informativeText="",
-                          type="warning")         
-        return
+        """Saves data, statistics, and plot"""
+        try:
+            self.save_data()
+            self.save_statistics()
+            self.save_plot()
+
+        except Exception as e:
+            utils.message_box(message="Error Saving All",
+                              informativeText="Reason:\n%s" % str(e),
+                              type="error")         
 
 
     def documentation(self):
-        """ADD DESCRIPTION"""
+        """Shows documentation for application"""
         utils.message_box(message="NOT IMPLEMENTED ERROR",
                           informativeText="",
                           type="warning")         
@@ -337,7 +396,7 @@ class MainUi(QMainWindow):
             # Change status of push button
             pushButton.setText('Running') 
             pushButton.setStyleSheet('background-color:green;') 
-            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
 
@@ -593,7 +652,7 @@ class MainUi(QMainWindow):
             # Change button to running status
             pushButton.setText('Running') 
             pushButton.setStyleSheet('background-color:green;') 
-            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
 
@@ -664,7 +723,7 @@ class MainUi(QMainWindow):
         # Change back button
         self.tab1_pushButton_LoadData.setText('Load Data') 
         self.tab1_pushButton_LoadData.setStyleSheet('') 
-        self.tab1_pushButton_LoadData.setIcon(QIcon('../icons/play.png'))
+        self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
         self.tab1_pushButton_LoadData.setDisabled(False)
 
 
@@ -931,10 +990,15 @@ class MainUi(QMainWindow):
                     except:
                         continue
 
+        # Update status of stats generated variables
+        self.stats_generated['status'] = True
+        self.stats_generated['xlabel'] = xlabel
+        self.stats_generated['ylabel'] = ylabel
+
         # Set back original push button
         self.pushButton_Generate.setText('Generate') 
         self.pushButton_Generate.setStyleSheet('') 
-        self.pushButton_Generate.setIcon(QIcon('../icons/play.png'))
+        self.pushButton_Generate.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
         self.pushButton_Generate.setDisabled(False)
 
 
@@ -1007,7 +1071,7 @@ class MainUi(QMainWindow):
             # Change button to running status
             pushButton.setText('Running') 
             pushButton.setStyleSheet('background-color:green;') 
-            pushButton.setIcon(QIcon('../icons/run.png'))
+            pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
 
@@ -1100,7 +1164,7 @@ class MainUi(QMainWindow):
         # Change back to original push button
         self.tab3_pushButton_FitModel.setText('Fit Model') 
         self.tab3_pushButton_FitModel.setStyleSheet('') 
-        self.tab3_pushButton_FitModel.setIcon(QIcon('../icons/play.png'))
+        self.tab3_pushButton_FitModel.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
         self.tab3_pushButton_FitModel.setDisabled(False)
 
 
@@ -1282,7 +1346,7 @@ class MainUi(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('../icons/app_icon.png'))
+    app.setWindowIcon(QIcon(os.path.join(utils.ICONS_PATH, 'app_icon.png')))
     app.setApplicationName("Exploratory Data Analysis Viewer")
     if utils.USE_DARK_THEME: app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = MainUi()

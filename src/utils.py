@@ -3,59 +3,6 @@
 # Import libraries from api
 from utils_api import *
 
-###############
-"""CONSTANTS"""
-###############
-
-AUTHOR         = "Robert Milletich"
-VERSION        = "0.0.1"
-BUILT_WITH     = "PySide + Python 2.7"
-LICENSE        = "https://github.com/rmill040/eda_viewer/blob/master/LICENSE"
-WEBSITE        = "https://github.com/rmill040/eda_viewer"
-
-MAIN_DIR       = os.path.abspath(__file__).split('src')[0]
-UI_PATH        = os.path.join(os.path.join(MAIN_DIR, 'src'), 'gui.ui')
-ICONS_PATH     = os.path.join(MAIN_DIR, 'icons')
-USE_DARK_THEME = True
-PLOTS_FOR_PRED = ['Scatter', 'Line', 'Scatter + Line']
-N_SPLITS       = 3
-
-DTYPE_TO_LABEL = {'int64': 'integer', 
-                  'float64': 'float',
-                  'object': 'object',
-                  'datetime64[ns]': 'datetime'}
-LABEL_TO_DTYPE = {value: key for key, value in DTYPE_TO_LABEL.iteritems()}
-
-LINK_MODEL_API = {
-    'Classification': {
-        'Random Forests': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html',
-        'K-Nearest Neighbors': 'http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html',
-        'Support Vector Machine': 'http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html',
-        'Neural Network': 'http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html',
-        'Gaussian Process': 'http://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessClassifier.html',
-        'Linear Model': 'http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html',
-        'Extra Trees': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html',
-        'Gradient Boosting': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html',
-        'Decision Tree': 'http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html'
-    },
-    'Regression': {
-        'Random Forests': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html',
-        'K-Nearest Neighbors': 'http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html',
-        'Support Vector Machine': 'http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html',
-        'Neural Network': 'http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html',
-        'Gaussian Process': 'http://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html',
-        'Linear Model': 'http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html',
-        'Extra Trees': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html',
-        'Gradient Boosting': 'http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html',
-        'Decision Tree': 'http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html'
-    },
-    'Clustering': {
-        'K-Means': 'http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html',
-        'DBSCAN': 'http://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html',
-        'Agglomerative': 'http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html'
-    }
-}
-
 
 ######################
 """HELPER FUNCTIONS"""
@@ -66,6 +13,7 @@ class UiLoader(QUiLoader):
     def __init__(self, base_instance):
         QUiLoader.__init__(self, base_instance)
         self.base_instance = base_instance
+
 
     def createWidget(self, class_name, parent=None, name=''):
         """ADD
@@ -111,30 +59,30 @@ def get_model(model_name, model_type):
     """
     models = {
         'Classification': {
-            'Random Forests': RandomForestClassifier,
-            'K-Nearest Neighbors': KNeighborsClassifier,
+            'Random Forests':         RandomForestClassifier,
+            'K-Nearest Neighbors':    KNeighborsClassifier,
             'Support Vector Machine': SVC,
-            'Neural Network': MLPClassifier,
-            'Gaussian Process': GaussianProcessClassifier,
-            'Linear Model': LogisticRegression,
-            'Extra Trees': ExtraTreesClassifier,
-            'Gradient Boosting': GradientBoostingClassifier,
-            'Decision Tree': DecisionTreeClassifier
+            'Neural Network':         MLPClassifier,
+            'Gaussian Process':       GaussianProcessClassifier,
+            'Linear Model':           LogisticRegression,
+            'Extra Trees':            ExtraTreesClassifier,
+            'Gradient Boosting':      GradientBoostingClassifier,
+            'Decision Tree':          DecisionTreeClassifier
         },
         'Regression': {
-            'Random Forests': RandomForestRegressor,
-            'K-Nearest Neighbors': KNeighborsRegressor,
+            'Random Forests':         RandomForestRegressor,
+            'K-Nearest Neighbors':    KNeighborsRegressor,
             'Support Vector Machine': SVR,
-            'Neural Network': MLPRegressor,
-            'Gaussian Process': GaussianProcessRegressor,
-            'Linear Model': LinearRegression,
-            'Extra Trees': ExtraTreesRegressor,
-            'Gradient Boosting': GradientBoostingRegressor,
-            'Decision Tree': DecisionTreeRegressor
+            'Neural Network':         MLPRegressor,
+            'Gaussian Process':       GaussianProcessRegressor,
+            'Linear Model':           LinearRegression,
+            'Extra Trees':            ExtraTreesRegressor,
+            'Gradient Boosting':      GradientBoostingRegressor,
+            'Decision Tree':          DecisionTreeRegressor
             },
         'Clustering': {
-            'K-Means': KMeans,
-            'DBSCAN': DBSCAN,
+            'K-Means':       KMeans,
+            'DBSCAN':        DBSCAN,
             'Agglomerative': AgglomerativeClustering
         }
     }
@@ -193,7 +141,7 @@ def message_box(message, informativeText, type, question=False):
     if question:
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        return msg.exec_()
+        return msg.exec_() # Return messagebox 
     else:
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
@@ -370,7 +318,27 @@ def get_spaced_colors(n, offset):
                              int(i[4:], 16)/float(255))]
 
 
-if __name__ == "__main__":
-    dat = pd.DataFrame(np.arange(100), columns=['x1'])
-    #univariate_statistics(dat['x1'])
-    print(value_counts_grouped(dat, pd.value_counts(dat['x1'])))
+def tablewidgets_to_dataframes(data):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    # Hold all dataframes
+    dfs = {}
+
+    # Iterate over each table
+    for col_name, table in data.iteritems():
+        n, df = table.rowCount(), {}
+        for row in xrange(n): df[str(table.item(row, 0).text())] = [float(table.item(row, 1).text())]
+        
+        # Make a column vector with variable named based on specified key
+        df = pd.DataFrame(df).T
+        df.columns = [col_name]
+        dfs[col_name] = df
+
+    # Return dataframes
+    return dfs

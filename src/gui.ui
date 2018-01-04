@@ -1247,6 +1247,9 @@
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
   </action>
   <action name="actionReset">
    <property name="text">
@@ -1301,6 +1304,9 @@
    </property>
    <property name="text">
     <string>Reset Data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
   <action name="menuItem_Exit_2">
