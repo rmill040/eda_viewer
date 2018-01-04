@@ -318,6 +318,18 @@ def get_spaced_colors(n, offset):
                              int(i[4:], 16)/float(255))]
 
 
+def check_for_categorical_label(data):
+    """ADD
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    return np.sum(pd.value_counts(data) >= N_SPLITS)
+
+
 def tablewidgets_to_dataframes(data):
     """ADD
     

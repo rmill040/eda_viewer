@@ -5,29 +5,20 @@ from main_api import *
 
 # TODO:
 # 1. Add status bar updates where necessary
-
-# 2. Check data types when model type is selected --
-# load demo_data...contx1, conty, classification, fit model yields following error
-# Traceback (most recent call last):
-#   File "src/main.py", line 1152, in slot_ThreadFitModel
-#     self.add_predictions(y_pred=y_pred, xlabel=xlabel, ylabel=ylabel, 
-# UnboundLocalError: local variable 'y_pred' referenced before assignment
-
+# 2. Add clear button for model summary
 # 3. Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
-# # Font size
-# self.font_model_params = QFont()
-# self.font_model_params.setPointSize(90)
-# self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_params)
+    # # Font size
+    # self.font_model_params = QFont()
+    # self.font_model_params.setPointSize(90)
+    # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_params)
 
-# self.font_model_summary = QFont()
-# self.font_model_summary.setPointSize(30)
-# self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
-
+    # self.font_model_summary = QFont()
+    # self.font_model_summary.setPointSize(30)
+    # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
 # 4. Connect all menu item buttons
 # 5. Build freeze scripts for different operating systems
-# 6. Fix data reset button to do actual reset
-# 7. Add threading to saving options
-# 8. Unit tests
+# 6. Add threading to saving options
+# 7. Unit tests
 
 
 class MainUi(QMainWindow):
@@ -151,6 +142,10 @@ class MainUi(QMainWindow):
         model = utils.get_model(model_name=self.model_name, model_type=self.model_type)
         text  = utils.pretty_print_dict(model.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
+
+        # Connect Clear button
+        self.tab3_pushButton_Clear.clicked.connect(self.tab3_plainTextEdit_ModelSummary.clear)
+        self.tab3_pushButton_Clear.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'eraser.png')))
 
         # Connect combo box functions
         self.tab3_comboBox_ModelType.activated[str].connect(self.add_model_names)
@@ -729,22 +724,60 @@ class MainUi(QMainWindow):
 
     def load_data(self):
         """ADD DESCRIPTION"""
-        # File dialog options for opening single file
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        file, _ = QFileDialog.getOpenFileName(self, "Load Data", "/",
-                                              "*.csv files (*.csv);;"
-                                              "*.tsv files (*tsv);;"
-                                              "*.txt files (*.txt);;",
-                                              options=options)
+        if not self.data_loaded:
+            # File dialog options for opening single file
+            options   = QFileDialog.Options()
+            options   |= QFileDialog.DontUseNativeDialog
+            file_info = QFileDialog.getOpenFileName(self, "Load Data", "/",
+                                                    "*.csv files (*.csv);;"
+                                                    "*.tsv files (*tsv);;"
+                                                    "*.txt files (*.txt);;",
+                                                    options=options)
 
-        # If a file is selected, try and open
-        if file:
-            self.data_loaded = False
-            self.file        = file # Define as attribute for accessing in other functions
-            self.data_thread = self.ThreadLoadData(file, self.tab1_pushButton_LoadData)
-            self.data_thread.data_signal.connect(self.slot_ThreadLoadData)
-            self.data_thread.start()
+            # If a file is selected, try and open
+            if file_info[0]:
+                self.data_loaded = False
+                self.file        = file_info[0] # Define as attribute for accessing in other functions
+                self.data_thread = self.ThreadLoadData(self.file, self.tab1_pushButton_LoadData)
+                self.data_thread.data_signal.connect(self.slot_ThreadLoadData)
+                self.data_thread.start()
+        
+        # Try data reset here
+        else:
+            try:
+                # Create new thread for resetting data
+                self.data_loaded       = False
+                self.reset_data_thread = self.ThreadLoadData(self.file, self.tab1_pushButton_LoadData)
+                self.reset_data_thread.data_signal.connect(self.slot_ThreadLoadData)
+                self.reset_data_thread.start()
+
+                # Reset plot
+                self.MplCanvas.update_plot(sample=[1, 2, 3],
+                                           x=[1, 2, 3], 
+                                           y=[1, 1, 1], 
+                                           xlabel='X', 
+                                           ylabel='Y',
+                                           plot_type='Line',
+                                           plot_generated={'status': False, 'xlabel': None, 'ylabel': None},
+                                           checkbox=QCheckBox)
+                self.plot_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
+
+                # Reset univariate results
+                self.tab2_tableWidget_Xstats.setRowCount(0)
+                self.tab2_tableWidget_Xfreq.setRowCount(0)
+                self.tab2_tableWidget_Ystats.setRowCount(0)
+                self.tab2_tableWidget_Yfreq.setRowCount(0)
+                self.stats_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
+
+                # Reset bivariate results
+                self.tab3_plainTextEdit_ModelSummary.clear()
+                self.tab3_plainTextEdit_ModelSummary.clear()
+                self.set_model_parameters()
+
+            except Exception as e:
+                utils.message_box(message="Error Resetting Data",
+                                  informativeText="Reason:\n%s\n\nTIP: Try restarting application" % str(e),
+                                  type="error")
 
 
     def add_data_row(self, var_name, dtype):
@@ -1021,7 +1054,6 @@ class MainUi(QMainWindow):
     # TAB 3 BIVARIATE UI: FUNCTIONS #
     #################################
 
-
     def add_model_names(self):
         """ADD DESCRIPTION"""
         self.model_type = self.tab3_comboBox_ModelType.currentText()
@@ -1040,8 +1072,8 @@ class MainUi(QMainWindow):
 
     def set_model_parameters(self):
         """ADD DESCRIPTION"""
-        self.clf = utils.get_model(model_name=self.model_name, model_type=self.model_type)
-        text = utils.pretty_print_dict(self.clf.get_params())
+        clf  = utils.get_model(model_name=self.model_name, model_type=self.model_type)
+        text = utils.pretty_print_dict(clf.get_params())
         self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
 
 
@@ -1232,6 +1264,13 @@ class MainUi(QMainWindow):
                                   type="error")
                 return
 
+            # Ensure label is categorical (based on CV splits) prior to fitting classifier
+            if self.model_type == 'Classification' and not utils.check_for_categorical_label(y):
+                utils.message_box(message="Error Fitting %s Model" % self.model_type,
+                                  informativeText="Reason:\nLess than 3 samples per unique value",
+                                  type="error")
+                return       
+
             # Try and convert hyperparameter text to dictionary and instantiate model
             try:
                 params = utils.text_to_dict(self.tab3_plainTextEdit_ModelParameters.toPlainText())
@@ -1260,7 +1299,6 @@ class MainUi(QMainWindow):
 
             # Run model (in separate thread)  
             self.run(X=X, y=y, xlabel=xlabel, ylabel=ylabel, model=model)
-
 
         else:
             utils.message_box(message="Error Fitting %s Model" % self.model_type,

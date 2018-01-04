@@ -43,7 +43,6 @@ WEBSITE        = "https://github.com/rmill040/eda_viewer"
 MAIN_DIR       = os.path.abspath(__file__).split('src')[0]
 UI_PATH        = os.path.join(os.path.join(MAIN_DIR, 'src'), 'gui.ui')
 ICONS_PATH     = os.path.join(MAIN_DIR, 'icons')
-print(ICONS_PATH)
 USE_DARK_THEME = True
 PLOTS_FOR_PRED = ['Scatter', 'Line', 'Scatter + Line']
 N_SPLITS       = 3

@@ -15,9 +15,9 @@ import numpy as np
 import os
 import pandas as pd
 from PySide import QtCore
-from PySide.QtGui import (QApplication, QComboBox, QFileDialog, QFont, QHBoxLayout, QHeaderView, 
-                          QIcon, QMainWindow, QMessageBox, QPixmap, QTableWidgetItem, QVBoxLayout, 
-                          QWidget)
+from PySide.QtGui import (QApplication, QCheckBox, QComboBox, QFileDialog, QFont, QHBoxLayout, 
+                          QHeaderView, QIcon, QMainWindow, QMessageBox, QPixmap, QTableWidgetItem, 
+                          QVBoxLayout, QWidget)
 import qdarkstyle
 import sys
 from threading import Thread

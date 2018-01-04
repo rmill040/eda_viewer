@@ -874,7 +874,7 @@
               <set>Qt::AlignCenter</set>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
+              <item row="1" column="0">
                <widget class="QPlainTextEdit" name="tab3_plainTextEdit_ModelSummary">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -898,6 +898,18 @@
                 </property>
                 <property name="plainText">
                  <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QPushButton" name="tab3_pushButton_Clear">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
                 </property>
                </widget>
               </item>
