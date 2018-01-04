@@ -15,7 +15,7 @@ from main_api import *
     # self.font_model_summary = QFont()
     # self.font_model_summary.setPointSize(30)
     # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
-# 4. Connect all menu item buttons
+# 4. Create documentation
 # 5. Build freeze scripts for different operating systems
 # 6. Add threading to saving options
 # 7. Unit tests
@@ -194,6 +194,83 @@ class MainUi(QMainWindow):
     # MENU UI: FUNCTIONS #
     ######################
 
+    class ThreadSaveData(QtCore.QThread):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """ 
+        # Define signals
+        data_signal = QtCore.Signal(list)
+
+
+        def __init__(self, data, filename):
+            QtCore.QThread.__init__(self)
+            self.data     = data
+            self.filename = filename
+
+        def __del__(self):
+            """ADD DESCRIPTION"""
+            self.wait()
+
+
+        def run(self):
+            """ADD DESCRIPTION"""
+            try:
+                self.data.to_csv(self.filename, index=False)
+                self.data_signal.emit(['Success'])
+            except Exception as e:
+                self.data_signal.emit([str(e)])
+
+
+    def slot_ThreadSaveData(self, data_signal):
+        """ADD
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        """
+        # Unpack signal and check status
+        status = data_signal[0]
+        if status != 'Success':
+            utils.message_box(message="Error Saving Data",
+                              informativeText="Reason:\n%s" % status,
+                              type="error")
+
+    def save_data(self):
+        """Saves data as specified extension"""
+        if self.data_loaded:
+            try:
+                options   = QFileDialog.Options()
+                options   |= QFileDialog.DontUseNativeDialog
+                file_info = QFileDialog.getSaveFileName(self, "Save Data", "/",
+                                                        "*.csv;;"
+                                                        "*.tsv;;"
+                                                        "*.txt",
+                                                        options=options)
+                if file_info[0]: 
+                    filename = ''.join(''.join(file_info).split('*'))
+                    self.save_data_thread = self.ThreadSaveData(data=self.data,
+                                                                filename=filename)
+                    self.save_data_thread.data_signal.connect(self.slot_ThreadSaveData)
+                    self.save_data_thread.start()
+            
+            except Exception as e:
+                utils.message_box(message="Error Saving Data",
+                                  informativeText="Reason:\n%s" % str(e),
+                                  type="error")         
+
+        else:
+            utils.message_box(message="Error Saving Data",
+                              informativeText="Reason:\nNo data loaded",
+                              type="error")
+
+
     def reset(self):
         """Resets data to original names and data types"""
         if not self.data_loaded:
@@ -218,33 +295,7 @@ class MainUi(QMainWindow):
                                      QMessageBox.Yes | QMessageBox.No, 
                                      QMessageBox.No)
         # Reset data if yes
-        if reply == QMessageBox.Yes: self.close()
-
-
-    def save_data(self):
-        """Saves data as specified extension"""
-        # TODO: threading
-
-        if self.data_loaded:
-            try:
-                options   = QFileDialog.Options()
-                options   |= QFileDialog.DontUseNativeDialog
-                file_info = QFileDialog.getSaveFileName(self, "Save Data", "/",
-                                                        "*.csv;;"
-                                                        "*.tsv;;"
-                                                        "*.txt",
-                                                        options=options)
-                if file_info[0]: self.data.to_csv(''.join(''.join(file_info).split('*')), index=False)
-            
-            except Exception as e:
-                utils.message_box(message="Error Saving Data",
-                                  informativeText="Reason:\n%s" % str(e),
-                                  type="error")         
-
-        else:
-            utils.message_box(message="Error Saving Data",
-                              informativeText="Reason:\nNo data loaded",
-                              type="error")         
+        if reply == QMessageBox.Yes: self.close()        
 
 
     def save_statistics(self):
