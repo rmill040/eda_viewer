@@ -6,8 +6,10 @@ from about_api import *
 
 class AboutUi(object):
     """ADD
+
     Parameters
     ----------
+    
     Returns
     -------
     """
@@ -108,6 +110,6 @@ class AboutUi(object):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    if utils.USE_DARK_THEME: app.setStyleSheet(qdarkstyle.load_stylesheet())
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = AboutUi()
     sys.exit(app.exec_())
