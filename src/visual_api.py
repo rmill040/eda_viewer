@@ -12,6 +12,8 @@ matplotlib.rcParams['backend.qt4'] = 'PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
+from PySide.QtGui import QSizePolicy
+
 import numpy as np
 import pandas as pd
 

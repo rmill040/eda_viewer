@@ -25,6 +25,8 @@ class MplCanvas(FigureCanvas):
 
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
 
 
 class DynamicMplCanvas(MplCanvas):
