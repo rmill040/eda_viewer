@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>705</height>
+    <width>1680</width>
+    <height>929</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,7 +34,7 @@
      <widget class="QGroupBox" name="groupBox_Visualize">
       <property name="font">
        <font>
-        <pointsize>12</pointsize>
+        <pointsize>14</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -46,92 +46,30 @@
        <set>Qt::AlignCenter</set>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="4" column="0" colspan="4">
-        <widget class="QWidget" name="widget_Plot" native="true">
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comboBox_YAxis">
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
+           <pointsize>14</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
          <property name="toolTip">
-          <string>Plot area</string>
+          <string>Y-variable</string>
          </property>
-         <property name="autoFillBackground">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" alignment="Qt::AlignHCenter">
-        <widget class="QLabel" name="label_YAxis">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Y-Axis</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2" alignment="Qt::AlignHCenter">
-        <widget class="QLabel" name="label_PlotType">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Plot Type</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QPushButton" name="pushButton_Generate">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="cursor">
-          <cursorShape>PointingHandCursor</cursorShape>
-         </property>
-         <property name="toolTip">
-          <string>Generate plot and summary statistics</string>
-         </property>
-         <property name="text">
-          <string>Generate</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
-         </property>
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="2" column="2">
         <widget class="QComboBox" name="comboBox_PlotType">
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
+           <pointsize>14</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -171,84 +109,11 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="comboBox_YAxis">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Y-variable</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="checkBox_StandardizeX">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Standardize X-variable</string>
-         </property>
-         <property name="text">
-          <string>Standardize X</string>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" alignment="Qt::AlignHCenter">
-        <widget class="QLabel" name="label_XAxis">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>X-Axis</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QCheckBox" name="checkBox_StandardizeY">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Standardize Y-variable</string>
-         </property>
-         <property name="text">
-          <string>Standardize Y</string>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="0">
         <widget class="QComboBox" name="comboBox_XAxis">
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
+           <pointsize>14</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -263,6 +128,141 @@
          </item>
         </widget>
        </item>
+       <item row="3" column="0">
+        <widget class="QCheckBox" name="checkBox_StandardizeX">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Standardize X-variable</string>
+         </property>
+         <property name="text">
+          <string>Standardize X</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="checkBox_StandardizeY">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Standardize Y-variable</string>
+         </property>
+         <property name="text">
+          <string>Standardize Y</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label_XAxis">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>X-Axis</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label_YAxis">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Y-Axis</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QPushButton" name="pushButton_Generate">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Generate plot and summary statistics</string>
+         </property>
+         <property name="text">
+          <string>Generate</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../icons/play.png</normaloff>../icons/play.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label_PlotType">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Plot Type</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="4">
+        <widget class="QWidget" name="widget_Plot" native="true">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Plot area</string>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -270,7 +270,7 @@
      <widget class="QGroupBox" name="groupBox_Analysis">
       <property name="font">
        <font>
-        <pointsize>12</pointsize>
+        <pointsize>14</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -298,7 +298,7 @@
          </property>
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
+           <pointsize>14</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -313,7 +313,7 @@
           <enum>QTabWidget::North</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -323,11 +323,285 @@
            <string>Data</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="0">
+            <layout class="QGridLayout" name="tab1_gridLayout_LHS">
+             <item row="0" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_Rows">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of rows in data set</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_Float">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of float data types</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="tab1_label_Object">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Object</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_Integer">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of integer data types</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_Object">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of object data types</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="tab1_label_Float">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Float</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="tab1_label_Rows">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Rows</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="Line" name="tab1_line1">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_DateTime">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of date/time data types</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QLabel" name="tab1_label_DataTypes">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                 <underline>false</underline>
+                </font>
+               </property>
+               <property name="text">
+                <string>Data Types</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="tab1_label_Columns">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Columns</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="tab1_label_Integer">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Integer</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLCDNumber" name="tab1_lcdNumber_Columns">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Number of columns in data set</string>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QLabel" name="tab1_label_DateTime">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Date/Time</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="tab1_label_DataSize">
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+               <underline>false</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string>Data Size</string>
+             </property>
+             <property name="scaledContents">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="1" colspan="2">
             <widget class="QTableWidget" name="tab1_tableWidget_VariableInfo">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -341,9 +615,6 @@
              </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAsNeeded</enum>
-             </property>
-             <property name="sizeAdjustPolicy">
-              <enum>QAbstractScrollArea::AdjustIgnored</enum>
              </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
@@ -393,30 +664,6 @@
              </column>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="tab1_label_DataSize">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
-               <underline>false</underline>
-              </font>
-             </property>
-             <property name="text">
-              <string>Data Size</string>
-             </property>
-             <property name="scaledContents">
-              <bool>false</bool>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="1" colspan="2">
             <widget class="QPushButton" name="tab1_pushButton_LoadData">
              <property name="sizePolicy">
@@ -427,7 +674,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -447,256 +694,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <layout class="QGridLayout" name="tab1_gridLayout_LHS">
-             <item row="0" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_Rows">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of rows in data set</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_Float">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of float data types</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="0">
-              <widget class="QLabel" name="tab1_label_Object">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Object</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_Integer">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of integer data types</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_Object">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of object data types</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="tab1_label_Float">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Float</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="tab1_label_Rows">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Rows</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="Line" name="tab1_line1">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="8" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_DateTime">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of date/time data types</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QLabel" name="tab1_label_DataTypes">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                 <underline>false</underline>
-                </font>
-               </property>
-               <property name="text">
-                <string>Data Types</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="tab1_label_Columns">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Columns</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="tab1_label_Integer">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Integer</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLCDNumber" name="tab1_lcdNumber_Columns">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Number of columns in data set</string>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="8" column="0">
-              <widget class="QLabel" name="tab1_label_DateTime">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Date/Time</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
           </layout>
          </widget>
          <widget class="QWidget" name="tab2_Univariate">
@@ -708,7 +705,7 @@
             <widget class="QTableWidget" name="tab2_tableWidget_Xstats">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -739,7 +736,7 @@
             <widget class="QTableWidget" name="tab2_tableWidget_Yfreq">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -770,7 +767,7 @@
             <widget class="QTableWidget" name="tab2_tableWidget_Xfreq">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -799,6 +796,11 @@
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="tab2_label_XVariable">
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>X-Variable</string>
              </property>
@@ -812,6 +814,11 @@
            </item>
            <item row="0" column="1">
             <widget class="QLabel" name="tab2_label_YVariable">
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>Summary statistics for Y-variable</string>
              </property>
@@ -830,7 +837,7 @@
             <widget class="QTableWidget" name="tab2_tableWidget_Ystats">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -868,7 +875,7 @@
             <widget class="QGroupBox" name="tab3_groupBox_ModelSummary">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="title">
@@ -888,7 +895,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>12</pointsize>
+                  <pointsize>14</pointsize>
                  </font>
                 </property>
                 <property name="toolTip">
@@ -909,7 +916,7 @@
                <widget class="QPushButton" name="tab3_pushButton_Clear">
                 <property name="font">
                  <font>
-                  <pointsize>12</pointsize>
+                  <pointsize>14</pointsize>
                  </font>
                 </property>
                 <property name="cursor">
@@ -930,7 +937,7 @@
             <widget class="QLabel" name="tab3_label_LinkToModelAPI">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
                <underline>true</underline>
               </font>
              </property>
@@ -964,7 +971,7 @@
             <widget class="QLabel" name="tab3_label_ModelType">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -976,7 +983,7 @@
             <widget class="QLabel" name="tab3_label_ModelName">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -994,7 +1001,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -1012,7 +1019,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -1039,7 +1046,7 @@
             <spacer name="tab3_verticalSpacer">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="orientation">
@@ -1060,7 +1067,7 @@
             <widget class="QCheckBox" name="tab3_checkBox_AddPredictions">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -1078,7 +1085,7 @@
             <widget class="QGroupBox" name="tab3_groupBox_ModelParameters">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="title">
@@ -1098,7 +1105,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>12</pointsize>
+                  <pointsize>14</pointsize>
                  </font>
                 </property>
                 <property name="toolTip">
@@ -1110,7 +1117,7 @@
                 <property name="plainText">
                  <string/>
                 </property>
-                <property name="placeholderText">
+                <property name="placeholderText" stdset="0">
                  <string/>
                 </property>
                </widget>
@@ -1119,7 +1126,7 @@
                <widget class="QPushButton" name="tab3_pushButton_FitModel">
                 <property name="font">
                  <font>
-                  <pointsize>12</pointsize>
+                  <pointsize>14</pointsize>
                  </font>
                 </property>
                 <property name="cursor">
@@ -1157,7 +1164,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
+     <width>1680</width>
      <height>22</height>
     </rect>
    </property>
@@ -1179,9 +1186,14 @@
       <rect>
        <x>239</x>
        <y>135</y>
-       <width>152</width>
-       <height>138</height>
+       <width>149</width>
+       <height>132</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+      </font>
      </property>
      <property name="title">
       <string>Save...</string>
@@ -1202,6 +1214,11 @@
     <addaction name="menuItem_Exit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
     <property name="title">
      <string>Help</string>
     </property>
@@ -1212,7 +1229,13 @@
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+  </widget>
   <action name="actionLoad_Data">
    <property name="text">
     <string>Load Data</string>
@@ -1225,6 +1248,11 @@
    </property>
    <property name="text">
     <string>Documentation</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
    </property>
   </action>
   <action name="menuItem_ExportData">
@@ -1269,6 +1297,11 @@
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
@@ -1291,6 +1324,11 @@
    <property name="text">
     <string>Data</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
   </action>
   <action name="menuItem_Plot">
    <property name="icon">
@@ -1299,6 +1337,11 @@
    </property>
    <property name="text">
     <string>Plot</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
    </property>
   </action>
   <action name="menuItem_Statistics">
@@ -1309,6 +1352,11 @@
    <property name="text">
     <string>Statistics</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
   </action>
   <action name="menuItem_All">
    <property name="icon">
@@ -1318,6 +1366,11 @@
    <property name="text">
     <string>All</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
   </action>
   <action name="menuItem_ResetData">
    <property name="icon">
@@ -1326,6 +1379,11 @@
    </property>
    <property name="text">
     <string>Reset Data</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>

@@ -679,16 +679,22 @@ class EDAViewer(QMainWindow):
                                         (self.data.shape))
             self.data_loaded = True
 
+            # Change back button
+            self.tab1_pushButton_LoadData.setText('Data Loaded') 
+            self.tab1_pushButton_LoadData.setStyleSheet('') 
+            self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
+            self.tab1_pushButton_LoadData.setDisabled(True)
+
         else:
             utils.message_box(message="Error Loading Data File %s" % self.file,
                               informativeText="Reason:\n%s" % signal,
                               type="error")
 
-        # Change back button
-        self.tab1_pushButton_LoadData.setText('Load Data') 
-        self.tab1_pushButton_LoadData.setStyleSheet('') 
-        self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
-        self.tab1_pushButton_LoadData.setDisabled(False)
+            # Change back button
+            self.tab1_pushButton_LoadData.setText('Load Data') 
+            self.tab1_pushButton_LoadData.setStyleSheet('') 
+            self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
+            self.tab1_pushButton_LoadData.setDisabled(False)
 
 
     def load_data(self):
@@ -792,6 +798,7 @@ class EDAViewer(QMainWindow):
         
         else:
             fixed_item = QTableWidgetItem('integer')
+            fixed_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
             fixed_item.setFlags(QtCore.Qt.ItemIsEnabled)
             self.tab1_tableWidget_VariableInfo.setItem(idx, 1, fixed_item)
 
@@ -811,6 +818,15 @@ class EDAViewer(QMainWindow):
         self.tab2_tableWidget_Xfreq.horizontalHeader().setVisible(True)
         self.tab2_tableWidget_Yfreq.horizontalHeader().setVisible(True)
 
+        # Setup size of each column
+        self.tab2_tableWidget_Xstats.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Xstats.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
+        self.tab2_tableWidget_Ystats.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Ystats.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
+        self.tab2_tableWidget_Xfreq.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Xfreq.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
+        self.tab2_tableWidget_Yfreq.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Yfreq.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
 
         # Update labels to reflect currently selected variable
         self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
@@ -925,11 +941,12 @@ class EDAViewer(QMainWindow):
 
                         # Create table items and make sure not editable
                         name_item = QTableWidgetItem(key)
+                        name_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
                         name_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                         key_item  = QTableWidgetItem('%.3f' % value)
-                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
                         key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                        key_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                         # Insert items into table
                         self.tab2_tableWidget_Xstats.setItem(idx, 0, name_item)
@@ -954,6 +971,7 @@ class EDAViewer(QMainWindow):
 
                         name_item.setFlags(QtCore.Qt.ItemIsEnabled)
                         key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        name_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
                         key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
                         # Insert items into table
@@ -974,6 +992,7 @@ class EDAViewer(QMainWindow):
                         # Create table items and make sure not editable
                         name_item = QTableWidgetItem(key)
                         name_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        name_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
                         key_item  = QTableWidgetItem('%.3f' % value)
                         key_item.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -1001,6 +1020,7 @@ class EDAViewer(QMainWindow):
 
                         name_item.setFlags(QtCore.Qt.ItemIsEnabled)
                         key_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        name_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
                         key_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
                         # Insert items into table
