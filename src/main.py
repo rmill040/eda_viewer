@@ -3,35 +3,28 @@
 # Import libraries from api
 from main_api import *
 
-# TODO:
-# 1. Add status bar updates where necessary
-# 2. Add clear button for model summary
-# 3. Add zoom for hyperparameters text box (https://stackoverflow.com/questions/7987881/how-to-scale-zoom-a-qtextedit-area-from-a-toolbar-button-click-and-or-ctrl-mou)
-    # # Font size
-    # self.font_model_params = QFont()
-    # self.font_model_params.setPointSize(90)
-    # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_params)
 
-    # self.font_model_summary = QFont()
-    # self.font_model_summary.setPointSize(30)
-    # self.tab3_plainTextEdit_ModelParameters.setFont(self.font_model_summary)
-# 4. Create documentation
-# 5. Build freeze scripts for different operating systems
-# 6. Add threading to saving options
-# 7. Unit tests
-
-
-class MainUi(QMainWindow):
-    """ADD DESCRIPTION HERE"""
+class EDAViewer(QMainWindow):
+    """Main window for exploratory data analysis viewer"""
     def __init__(self, parent=None):
-
-        #######################
-        # PRELIMINARY ACTIONS #
-        #######################
-
-        # Parent constructor
         QMainWindow.__init__(self, parent)
 
+        # General setup and connect menu, tabs, and visualize interfaces
+        self.setup_general()
+        self.setup_menu_ui()
+        self.setup_data_ui()        
+        self.setup_univariate_ui()
+        self.setup_bivariate_ui()
+        self.setup_visualize_ui()
+
+    # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
+
+    ###################
+    # MISC: FUNCTIONS #
+    ###################
+
+    def setup_general(self):
+        """ADD DESCRIPTION"""
         # Load .ui file dynamically for now
         utils.load_ui(utils.UI_PATH, self)
 
@@ -41,17 +34,13 @@ class MainUi(QMainWindow):
         self.statusBar.showMessage("""Click "Load Data" button to begin""")
         self.tabWidget_Analysis.setCurrentIndex(0)
 
-        # Enable add headers for table widgets
-        self.tab1_tableWidget_VariableInfo.horizontalHeader().setVisible(True)
-        self.tab2_tableWidget_Xstats.horizontalHeader().setVisible(True)
-        self.tab2_tableWidget_Ystats.horizontalHeader().setVisible(True)
-        self.tab2_tableWidget_Xfreq.horizontalHeader().setVisible(True)
-        self.tab2_tableWidget_Yfreq.horizontalHeader().setVisible(True)
 
+    ######################
+    # MENU UI: FUNCTIONS #
+    ######################
 
-        ################
-        # FILE MENU UI #
-        ################
+    def setup_menu_ui(self):
+        """Initialize menu items interface"""
 
         # File -> Reset data button
         self.menuItem_ResetData.triggered.connect(self.reset)
@@ -81,118 +70,13 @@ class MainUi(QMainWindow):
         self.menuItem_Exit.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'window-close.png')))
 
         # Help -> Documentation button
-        self.menuItem_Documentation.triggered.connect(self.documentation)
+        self.menuItem_Documentation.triggered.connect(self.show_documentation)
         self.menuItem_Documentation.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'application.png')))
 
         # Help -> About button
         self.menuItem_About.triggered.connect(AboutUi)
         self.menuItem_About.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'information-outline.png')))
 
-
-        #####################
-        # TAB 1 DATA TAB UI #
-        #####################
-
-        # Connect load data button
-        self.data_loaded = False
-        self.tab1_pushButton_LoadData.clicked.connect(self.load_data)
-        self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
-
-        # Connect variable names in table widget to item changed signal so that when
-        # user changes the label, the app automatically updates other components with 
-        # new variable name. The self.already_changed attribute is a "hack" that helps control
-        # the app from repeating error messages twice. Specifically, the item changed 
-        # function is called every time a variable name is changed -- so when a user
-        # inputs an invalid variable name, that is change 1 and the item changed function
-        # is called. Then the function changes the variable name back to its original, valid
-        # name and that is change 2 and the function is called again.
-        self.already_changed = False
-        self.tab1_tableWidget_VariableInfo.itemChanged.connect(self.update_variable_name)
-
-
-        ###########################
-        # TAB 2 UNIVARIATE TAB UI #
-        ###########################
-
-        self.stats_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
-
-        # Update labels to reflect currently selected variable
-        self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
-        self.tab2_label_YVariable.setText('Y-Variable: %s' % self.comboBox_YAxis.currentText())
-
-
-        #######################
-        # TAB 3 BIVARIATE TAB #
-        #######################
-
-        # Populate combo box for model names
-        self._n_models_fitted = 0
-        self.model_type       = self.tab3_comboBox_ModelType.currentText()
-        self.tab3_comboBox_ModelName.addItems(utils.LINK_MODEL_API[self.model_type].keys())
-
-        # Activate URL for model API links
-        self.model_name = self.tab3_comboBox_ModelName.currentText()
-        self.url        = utils.LINK_MODEL_API[self.model_type][self.model_name]
-        self.tab3_label_LinkToModelAPI.setOpenExternalLinks(True)
-        self.tab3_label_LinkToModelAPI.setText(
-            '''<a href='{}'>Link to Model API</a>'''.format(self.url)
-            )
-
-        # Add model parameters to plain text widget
-        model = utils.get_model(model_name=self.model_name, model_type=self.model_type)
-        text  = utils.pretty_print_dict(model.get_params())
-        self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
-
-        # Connect Clear button
-        self.tab3_pushButton_Clear.clicked.connect(self.tab3_plainTextEdit_ModelSummary.clear)
-        self.tab3_pushButton_Clear.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'eraser.png')))
-
-        # Connect combo box functions
-        self.tab3_comboBox_ModelType.activated[str].connect(self.add_model_names)
-        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_api_link)
-        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_parameters)
-
-        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_api_link)
-        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_parameters)
-
-        # Connect fit model button
-        self.tab3_pushButton_FitModel.clicked.connect(self.fit_model)
-        self.tab3_pushButton_FitModel.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
-
-        # Disable add predictions checkbox for now
-        self.tab3_checkBox_AddPredictions.setEnabled(False)
-
-
-        ################
-        # VISUALIZE UI #
-        ################
-
-        # Add matplotlib widget
-        self.plot_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
-        self.vbox           = QVBoxLayout()
-        self.MplCanvas      = DynamicMplCanvas()
-        self.navi_toolbar   = NavigationToolbar(self.MplCanvas, self)
-        self.vbox.addWidget(self.MplCanvas)
-        self.vbox.addWidget(self.navi_toolbar)
-        self.vbox.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.widget_Plot.setLayout(self.vbox)
-
-        # Connect generate button
-        self.pushButton_Generate.clicked.connect(self.generate_results)
-        self.pushButton_Generate.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
-
-        # Connect combo boxes to check boxes
-        self.comboBox_XAxis.activated.connect(self.update_checkbox)
-        self.comboBox_YAxis.activated.connect(self.update_checkbox)
-        self.checkBox_StandardizeX.setEnabled(False)
-        self.checkBox_StandardizeY.setEnabled(False)
-
-    # ~~~~~~~~~~~~~~~~~ END OF __INIT__ ~~~~~~~~~~~~~~~~~ #
-
-
-    ######################
-    # MENU UI: FUNCTIONS #
-    ######################
 
     class ThreadSaveData(QtCore.QThread):
         """ADD
@@ -206,7 +90,6 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
-
         def __init__(self, data, filename):
             QtCore.QThread.__init__(self)
             self.data     = data
@@ -215,7 +98,6 @@ class MainUi(QMainWindow):
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
-
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -374,9 +256,9 @@ class MainUi(QMainWindow):
                               type="error")         
 
 
-    def documentation(self):
+    def show_documentation(self):
         """Shows documentation for application"""
-        utils.message_box(message="NOT IMPLEMENTED ERROR",
+        utils.message_box(message="Documentation Not Currently Available",
                           informativeText="",
                           type="warning")         
         return 
@@ -386,6 +268,28 @@ class MainUi(QMainWindow):
     ###########################
     # VISUALIZE UI: FUNCTIONS #
     ###########################
+
+    def setup_visualize_ui(self):
+        """ADD DESCRIPTION"""
+        # Add matplotlib widget
+        self.plot_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
+        self.vbox           = QVBoxLayout()
+        self.MplCanvas      = DynamicMplCanvas()
+        self.navi_toolbar   = NavigationToolbar(self.MplCanvas, self)
+        self.vbox.addWidget(self.MplCanvas)
+        self.vbox.addWidget(self.navi_toolbar)
+        self.vbox.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.widget_Plot.setLayout(self.vbox)
+
+        # Connect generate button
+        self.pushButton_Generate.clicked.connect(self.generate_results)
+        self.pushButton_Generate.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
+
+        # Connect combo boxes to check boxes
+        self.comboBox_XAxis.activated.connect(self.update_checkbox)
+        self.comboBox_YAxis.activated.connect(self.update_checkbox)
+        self.checkBox_StandardizeX.setEnabled(False)
+        self.checkBox_StandardizeY.setEnabled(False)
 
 
     def update_combobox_xyaxis(self):
@@ -433,7 +337,6 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
-
         def __init__(self, pushButton, func, kwargs):
             QtCore.QThread.__init__(self)
             self.func   = func
@@ -445,11 +348,9 @@ class MainUi(QMainWindow):
             pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
-
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
-
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -533,7 +434,6 @@ class MainUi(QMainWindow):
 
             # Update plot (in separate thread)
             kwargs = {
-                'sample': self.data['Sample'],
                 'x': x,
                 'y': y,
                 'xlabel': xlabel,
@@ -567,6 +467,26 @@ class MainUi(QMainWindow):
     ############################
     # TAB 1 DATA UI: FUNCTIONS #
     ############################
+
+    def setup_data_ui(self):
+        """ADD DESCRIPTION"""
+        # Connect load data button
+        self.data_loaded = False
+        self.tab1_tableWidget_VariableInfo.horizontalHeader().setVisible(True)
+        self.tab1_pushButton_LoadData.clicked.connect(self.load_data)
+        self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
+
+        # Connect variable names in table widget to item changed signal so that when
+        # user changes the label, the app automatically updates other components with 
+        # new variable name. The self.already_changed attribute is a "hack" that helps control
+        # the app from repeating error messages twice. Specifically, the item changed 
+        # function is called every time a variable name is changed -- so when a user
+        # inputs an invalid variable name, that is change 1 and the item changed function
+        # is called. Then the function changes the variable name back to its original, valid
+        # name and that is change 2 and the function is called again.
+        self.already_changed = False
+        self.tab1_tableWidget_VariableInfo.itemChanged.connect(self.update_variable_name)
+
 
     def update_variable_name(self):
         """ADD DESCRIPTION"""
@@ -701,11 +621,9 @@ class MainUi(QMainWindow):
             pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
-
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
-
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -803,8 +721,7 @@ class MainUi(QMainWindow):
                 self.reset_data_thread.start()
 
                 # Reset plot
-                self.MplCanvas.update_plot(sample=[1, 2, 3],
-                                           x=[1, 2, 3], 
+                self.MplCanvas.update_plot(x=[1, 2, 3], 
                                            y=[1, 1, 1], 
                                            xlabel='X', 
                                            ylabel='Y',
@@ -882,6 +799,24 @@ class MainUi(QMainWindow):
     ##################################
     # TAB 2 UNIVARIATE UI: FUNCTIONS #
     ##################################
+
+    def setup_univariate_ui(self):
+        """ADD DESCRIPTION"""
+        # Data structure about stats generated
+        self.stats_generated = {'status': False, 'xlabel': 'None', 'ylabel': 'None'}
+
+        # Enable add headers for table widgets
+        self.tab2_tableWidget_Xstats.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Ystats.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Xfreq.horizontalHeader().setVisible(True)
+        self.tab2_tableWidget_Yfreq.horizontalHeader().setVisible(True)
+
+
+        # Update labels to reflect currently selected variable
+        self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
+        self.tab2_label_YVariable.setText('Y-Variable: %s' % self.comboBox_YAxis.currentText())
+
+
 
     class ThreadUnivariateDescriptives(QtCore.QThread):
         """ADD
@@ -1071,13 +1006,14 @@ class MainUi(QMainWindow):
                         # Insert items into table
                         self.tab2_tableWidget_Yfreq.setItem(idx, 0, name_item)
                         self.tab2_tableWidget_Yfreq.setItem(idx, 1, key_item)
+
                     except:
                         continue
 
-        # Update status of stats generated variables
-        self.stats_generated['status'] = True
-        self.stats_generated['xlabel'] = xlabel
-        self.stats_generated['ylabel'] = ylabel
+            # Update status of stats generated variables
+            self.stats_generated['status'] = True
+            self.stats_generated['xlabel'] = xlabel
+            self.stats_generated['ylabel'] = ylabel
 
         # Set back original push button
         self.pushButton_Generate.setText('Generate') 
@@ -1104,6 +1040,46 @@ class MainUi(QMainWindow):
     #################################
     # TAB 3 BIVARIATE UI: FUNCTIONS #
     #################################
+
+    def setup_bivariate_ui(self):
+        """ADD DESCRIPTION"""
+        # Populate combo box for model names
+        self._n_models_fitted = 0
+        self.model_type       = self.tab3_comboBox_ModelType.currentText()
+        self.tab3_comboBox_ModelName.addItems(utils.LINK_MODEL_API[self.model_type].keys())
+
+        # Activate URL for model API links
+        self.model_name = self.tab3_comboBox_ModelName.currentText()
+        self.url        = utils.LINK_MODEL_API[self.model_type][self.model_name]
+        self.tab3_label_LinkToModelAPI.setOpenExternalLinks(True)
+        self.tab3_label_LinkToModelAPI.setText(
+            '''<a href='{}'>Link to Model API</a>'''.format(self.url)
+            )
+
+        # Add model parameters to plain text widget
+        model = utils.get_model(model_name=self.model_name, model_type=self.model_type)
+        text  = utils.pretty_print_dict(model.get_params())
+        self.tab3_plainTextEdit_ModelParameters.setPlainText(text)
+
+        # Connect Clear button
+        self.tab3_pushButton_Clear.clicked.connect(self.tab3_plainTextEdit_ModelSummary.clear)
+        self.tab3_pushButton_Clear.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'eraser.png')))
+
+        # Connect combo box functions
+        self.tab3_comboBox_ModelType.activated[str].connect(self.add_model_names)
+        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_api_link)
+        self.tab3_comboBox_ModelType.activated[str].connect(self.set_model_parameters)
+
+        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_api_link)
+        self.tab3_comboBox_ModelName.activated[str].connect(self.set_model_parameters)
+
+        # Connect fit model button
+        self.tab3_pushButton_FitModel.clicked.connect(self.fit_model)
+        self.tab3_pushButton_FitModel.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
+
+        # Disable add predictions checkbox for now
+        self.tab3_checkBox_AddPredictions.setEnabled(False)
+
 
     def add_model_names(self):
         """ADD DESCRIPTION"""
@@ -1157,11 +1133,9 @@ class MainUi(QMainWindow):
             pushButton.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'run.png')))
             pushButton.setDisabled(True)
 
-
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
-
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -1370,17 +1344,14 @@ class MainUi(QMainWindow):
         # Define signals
         data_signal = QtCore.Signal(list)
 
-
         def __init__(self, func, kwargs):
             QtCore.QThread.__init__(self)
             self.func   = func
             self.kwargs = kwargs
 
-
         def __del__(self):
             """ADD DESCRIPTION"""
             self.wait()
-
 
         def run(self):
             """ADD DESCRIPTION"""
@@ -1434,10 +1405,15 @@ class MainUi(QMainWindow):
 
 
 if __name__ == "__main__":
+    # Create main thread
     app = QApplication(sys.argv)
+
+    # Set window icon and application name
     app.setWindowIcon(QIcon(os.path.join(utils.ICONS_PATH, 'app_icon.png')))
     app.setApplicationName("Exploratory Data Analysis Viewer")
-    if utils.USE_DARK_THEME: app.setStyleSheet(qdarkstyle.load_stylesheet())
-    window = MainUi()
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
+
+    # Initialize EDAViewer
+    window = EDAViewer()
     window.showMaximized()
     sys.exit(app.exec_())

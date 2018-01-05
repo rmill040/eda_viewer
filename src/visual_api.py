@@ -13,6 +13,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
 import numpy as np
+import pandas as pd
 
 # Custom functions
 import utils

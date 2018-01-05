@@ -62,14 +62,13 @@ class DynamicMplCanvas(MplCanvas):
             pass
 
 
-    def update_plot(self, sample, x, y, xlabel, ylabel, plot_type, plot_generated, checkbox):
+    def update_plot(self, x, y, xlabel, ylabel, plot_type, plot_generated, checkbox):
         """Updates plot based on user input and plot type
+        # TODO: Fix axis x-axis tick marks and labels for bar charts, especially when two
+        # variables plotted together
         
         Parameters
         ----------
-        sample : pandas Series
-            Unique sample IDs
-
         x : pandas Series
             x variable for plotting
 
@@ -146,30 +145,33 @@ class DynamicMplCanvas(MplCanvas):
 
                 # Set title for any histogram
                 self.axes.set_title(title_str)
-                self.axes.set_ylabel('Value')
+                self.axes.set_ylabel('Count')
                 plt.legend(loc='best')
-
 
             # Bar Chart
             elif plot_type == 'Bar Chart':
-                xlabel = 'Sample'
-                if x is not None: self.axes.bar(sample, x, alpha=.6, label=xlabel, color='blue')
-                if y is not None: self.axes.bar(sample, y, alpha=.6, label=ylabel, color='green')
+                if x is not None:
+                    self.axes.bar(np.unique(x), pd.value_counts(x), alpha=.6, label=xlabel, color='blue')
+
+                if y is not None: 
+                    self.axes.bar(np.unique(y), pd.value_counts(y), alpha=.6, label=ylabel, color='green')
 
                 # Add labels and title
                 if x is not None and y is not None:
                     title_str = "Bar Chart: {} and {}".format(xlabel, ylabel)
+                    self.axes.set_xlabel(xlabel + ' and ' + ylabel)
                 
                 elif x is not None and y is None:
                     title_str = "Bar Chart: {}".format(xlabel)
-                
+                    self.axes.set_xlabel(xlabel)
+
                 else:
                     title_str = "Bar Chart: {}".format(ylabel)
+                    self.axes.set_xlabel(ylabel)
 
                 # Set title for any bar chart
                 self.axes.set_title(title_str)
-                self.axes.set_xlabel(xlabel)
-                self.axes.set_ylabel('Value')
+                self.axes.set_ylabel('Count')
                 plt.legend(loc='best')
 
             # Boxplot
