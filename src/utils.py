@@ -101,8 +101,7 @@ def pretty_print_dict(model_params):
     """
     if 'pooling_func' in model_params.keys(): 
         model_params = {k:v for k,v in model_params.items() if k != 'pooling_func'}
-
-    return json.dumps(model_params, indent=4)
+    return json.dumps(model_params, indent=4).replace('null', 'None')
 
 
 def text_to_dict(model_params):
@@ -114,7 +113,7 @@ def text_to_dict(model_params):
     Returns
     -------
     """
-    return json.loads(model_params)
+    return json.loads(model_params.replace('None', 'null'))
 
 
 def message_box(message, informativeText, type, question=False):
