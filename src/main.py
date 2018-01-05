@@ -473,6 +473,8 @@ class EDAViewer(QMainWindow):
         # Connect load data button
         self.data_loaded = False
         self.tab1_tableWidget_VariableInfo.horizontalHeader().setVisible(True)
+        self.tab1_tableWidget_VariableInfo.horizontalHeader().setResizeMode(0, QHeaderView.Fixed)
+        self.tab1_tableWidget_VariableInfo.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
         self.tab1_pushButton_LoadData.clicked.connect(self.load_data)
         self.tab1_pushButton_LoadData.setIcon(QIcon(os.path.join(utils.ICONS_PATH, 'play.png')))
 
@@ -819,13 +821,13 @@ class EDAViewer(QMainWindow):
         self.tab2_tableWidget_Yfreq.horizontalHeader().setVisible(True)
 
         # Setup size of each column
-        self.tab2_tableWidget_Xstats.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Xstats.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
         self.tab2_tableWidget_Xstats.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
-        self.tab2_tableWidget_Ystats.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Ystats.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
         self.tab2_tableWidget_Ystats.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
-        self.tab2_tableWidget_Xfreq.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Xfreq.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
         self.tab2_tableWidget_Xfreq.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
-        self.tab2_tableWidget_Yfreq.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.tab2_tableWidget_Yfreq.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
         self.tab2_tableWidget_Yfreq.horizontalHeader().setResizeMode(1, QHeaderView.ResizeToContents)
 
         # Update labels to reflect currently selected variable
