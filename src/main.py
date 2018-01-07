@@ -151,6 +151,7 @@ class EDAViewer(QMainWindow):
             utils.message_box(message="Error Saving Data",
                               informativeText="Reason:\nNo data loaded",
                               type="error")
+            return
 
 
     def reset(self):
@@ -219,7 +220,8 @@ class EDAViewer(QMainWindow):
         else:
             utils.message_box(message="Error Saving Statistics",
                               informativeText="Reason:\nNo statistics calculated",
-                              type="error")         
+                              type="error")
+            return       
 
 
     def save_plot(self):
@@ -240,20 +242,26 @@ class EDAViewer(QMainWindow):
         else:
             utils.message_box(message="Error Saving Plot",
                               informativeText="Reason:\nNo plot generated",
-                              type="error")         
+                              type="error")
+            return     
 
 
     def save_all(self):
         """Saves data, statistics, and plot"""
-        try:
-            self.save_data()
-            self.save_statistics()
-            self.save_plot()
+        if self.data_loaded:
+            try:
+                self.save_data()
+                self.save_statistics()
+                self.save_plot()
 
-        except Exception as e:
+            except Exception as e:
+                utils.message_box(message="Error Saving All",
+                                  informativeText="Reason:\n%s" % str(e),
+                                  type="error")
+        else:
             utils.message_box(message="Error Saving All",
-                              informativeText="Reason:\n%s" % str(e),
-                              type="error")         
+                              informativeText="Reason:\nNo data loaded",
+                              type="error")       
 
 
     def show_documentation(self):
@@ -298,9 +306,11 @@ class EDAViewer(QMainWindow):
         self.comboBox_XAxis.clear()
         self.comboBox_YAxis.clear()
 
-        # Update items
+        # Update items and reset label
         self.comboBox_XAxis.addItems(['None'] + self.var_names)
         self.comboBox_YAxis.addItems(['None'] + self.var_names)
+        self.tab2_label_XVariable.setText('X-Variable: %s' % self.comboBox_XAxis.currentText())
+        self.tab2_label_YVariable.setText('Y-Variable: %s' % self.comboBox_YAxis.currentText())
 
 
     def update_checkbox(self):

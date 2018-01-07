@@ -17,12 +17,14 @@ def main():
     # Detect OS and add alias via .bashrc or .bash_profile
     if 'linux' in PLATFORM:
         LINUX_COMMAND = """grep -q -F "alias eda='{}'" ~/.bashrc || echo "alias eda='{}'" >> ~/.bashrc""".format(CALL, CALL)
+        os.system("""echo "\n# Alias for Exploratory Data Analysis Viewer" >> ~/.bashrc""")
         os.system(LINUX_COMMAND)
         os.system("source ~/.bashrc")
         print("\n\n**Alias 'eda' set in ~/.bashrc file. Restart terminal to use alias")
     
     elif 'darwin' in PLATFORM:
         MAC_COMMAND = """grep -q -F "alias eda='{}'" ~/.bash_profile || echo "alias eda='{}'" >> ~/.bash_profile""".format(CALL, CALL)
+        os.system("""echo "\n# Alias for Exploratory Data Analysis Viewer" >> ~/.bash_profile""")
         os.system(MAC_COMMAND)
         os.system("source ~/.bash_profile")
         print("\n\n**Alias 'eda' set in ~/.bash_profile file. Restart terminal to use alias")
